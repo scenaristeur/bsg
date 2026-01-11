@@ -35,9 +35,19 @@ app.get("/users", async (req, res) => {
         "SELECT * FROM users"
     )
     return res.json(users)
-
 })
 
+app.delete("/users", async (req, res) => {
+    const body = req.body
+    const db = await getDB()
+    console.log("delete", body)
+    const id = body.id
+    const sql = 'DELETE FROM users WHERE id = ?'
+    let result = await db.run(sql, (id))
+    console.log("result", result)
+    res.json({ message: "Utilisateur effacé", id: id })
+
+})
 app.post("/users", async (req, res) => {
     const body = req.body
 
