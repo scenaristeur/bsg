@@ -9,10 +9,13 @@ export async function initDB() {
         driver: sqlite3.Database
     })
 
+    // email       TEXT        NOT NULL,
+    // password    
     await dbInstance.exec(`
     CREATE TABLE IF NOT EXISTS users (
     id          INTEGER     PRIMARY KEY AUTOINCREMENT,
     name        TEXT        NOT NULL,
+
     createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
     )    
     `)

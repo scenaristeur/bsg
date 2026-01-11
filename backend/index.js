@@ -2,6 +2,7 @@ import express from 'express'
 import { getDB, initDB } from './db.js'
 import bodyParser from 'body-parser'
 import cors from "cors";
+import path from 'path'
 // import dotenv from "dotenv"
 // dotenv.config()
 
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000
 
 const app = express()
 app.use(bodyParser.json())
+app.use(express.static("public"))
 initDB()
 
 // app.use(cors({
@@ -22,7 +24,9 @@ initDB()
 // }));
 
 app.get("/", (req, res) => {
-    res.send("serveur backend BSG")
+    // res.send("serveur backend BSG")
+    res.sendFile(path.join(process.cwd(), "/views/index.html"))
+
 })
 
 app.get("/users", async (req, res) => {
