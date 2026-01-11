@@ -25,39 +25,39 @@ app.get("/", (req, res) => {
     res.send("serveur backend BSG")
 })
 
-app.get("/users", (req, res) => {
-    let users = [
-        { id: 1 },
-        { id: 2 }
-    ]
-    res.json(
-        users
+app.get("/users", async (req, res) => {
+    const db = await getDB()
+    const users = await db.all(
+        "SELECT * FROM users"
     )
+    return res.json(users)
+
 })
 
 app.post("/users", async (req, res) => {
-    // console.log(req)
     const body = req.body
-    console.log(body)
-    // const name = body.name
-    // if (!name || typeof name !== "string") {
-    //     res.statusCode = 400
-    //     res.json({ error: "Invalid name" })
-    //     return
-    // }
 
-    // const db = getDB()
-    // let id = await db.run(`
-    //     INSERT INTO users (name)
-    //     VALUES (?)
-    //     `, [name])
-    // console.log("id", id)
-    // const user = await db.get(
-    //     "SELECT * FROM users WHERE id = (SELECT last_insert_rowid())"
-    // )
+    // Vérification de la présence du corps de la requête
+    if (!body) {
+        return res.status(400).json({ error: "Aucune donnée reçue" })
+    }
 
-    // res.json(user)
-    res.json(body)
+    // Vérification de la présence du nom
+    const name = body.name
+    if (!name || typeof name !== "string") {
+        return res.status(400).json({ error: "Nom invalide" })
+    }
+
+    const db = await getDB()
+
+    await db.run(
+        'INSERT INTO users (name) VALUES (?)'
+        , name)
+    const user = await db.get(
+        "SELECT * FROM users WHERE id = (SELECT last_insert_rowid())"
+    )
+    res.statusCode = 201
+    res.json({ message: "Utilisateur créé", user: user })
 })
 
 

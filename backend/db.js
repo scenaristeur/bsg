@@ -17,6 +17,9 @@ export async function initDB() {
     )    
     `)
 
+    // await dbInstance.exec('CREATE TABLE tbl (col TEXT)')
+    // await dbInstance.exec('INSERT INTO tbl VALUES ("test")')
+
 }
 
 export async function getDB() {
