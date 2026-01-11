@@ -53,6 +53,7 @@
 
 <script>
 import { userService } from '../services/userService'
+import { useUserStore } from '../stores/user'
 
 export default {
     name: 'UserList',
@@ -66,8 +67,8 @@ export default {
     },
     mounted() {
         // Vérification de l'authentification
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-        if (!isLoggedIn) {
+        const userStore = useUserStore()
+        if (!userStore.isLoggedIn) {
             this.$router.push('/login')
             return
         }

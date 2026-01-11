@@ -45,7 +45,8 @@ export const useUserStore = defineStore('user', {
             this.currentUser = user
             this.isLoggedIn = true
         }
-    },
+    }
 
-    persist: true // Permet de conserver les données dans le localStorage
+    // persist: true // Permet de conserver les données dans le localStorage
+    // Supprimé pour uniformiser l'utilisation du store
 })

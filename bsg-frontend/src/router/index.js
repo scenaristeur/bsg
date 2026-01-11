@@ -1,10 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
-// Vérification d'authentification
-const isAuthenticated = () => {
-  return localStorage.getItem('isLoggedIn') === 'true'
-}
+import { useUserStore } from '../stores/user'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,7 +47,8 @@ const router = createRouter({
 
 // Middleware global d'authentification
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !isAuthenticated()) next({ name: 'login' })
+  const userStore = useUserStore()
+  if (to.name !== 'login' && !userStore.isLoggedIn) next({ name: 'login' })
   else next()
 })
 
