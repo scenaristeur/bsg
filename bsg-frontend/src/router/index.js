@@ -48,7 +48,7 @@ const router = createRouter({
 // Middleware global d'authentification
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
-  if (to.name !== 'login' && !userStore.isLoggedIn) next({ name: 'login' })
+  if (to.name !== 'login' && to.name !== 'signup' && !userStore.isLoggedIn) next({ name: 'login' })
   else next()
 })
 

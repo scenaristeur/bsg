@@ -37,6 +37,11 @@ app.use('/api/rencontres', rencontresRouter)
 app.use('/api/interactions', interactionsRouter)
 app.use('/api/evenements', evenementsRouter)
 
+// Route de test pour vérifier que le serveur fonctionne
+app.get('/test', (req, res) => {
+    res.json({ message: 'Serveur backend fonctionnel' })
+})
+
 // Route de connexion
 app.post("/login", async (req, res) => {
     const { email, password } = req.body

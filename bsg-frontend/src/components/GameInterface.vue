@@ -6,6 +6,7 @@
             <div class="user-info">
                 <span v-if="currentUser && currentUser.prenom && currentUser.nom">Bienvenue, {{ currentUser.prenom }} {{
                     currentUser.nom }}</span>
+                <span v-else-if="currentUser && currentUser.pseudo">Bienvenue, {{ currentUser.pseudo }}</span>
                 <span v-else>Bienvenue, Invité</span>
                 <button @click="logout" class="logout-btn">Déconnexion</button>
             </div>
@@ -42,8 +43,16 @@
                         <input v-model="userProfile.prenom" disabled />
                     </div>
                     <div class="form-group">
+                        <label>Pseudo:</label>
+                        <input v-model="userProfile.pseudo" disabled />
+                    </div>
+                    <div class="form-group">
                         <label>Email:</label>
                         <input v-model="userProfile.email" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input v-model="userProfile.password" />
                     </div>
                     <div class="form-group">
                         <label>Date de naissance:</label>
@@ -193,6 +202,8 @@ export default {
                 nom: '',
                 prenom: '',
                 email: '',
+                pseudo: '',
+                password: '',
                 dateNaissance: '',
                 interets: '',
                 preferencesRencontre: '',
@@ -229,6 +240,8 @@ export default {
                     prenom: this.currentUser.prenom || '',
                     email: this.currentUser.email || '',
                     dateNaissance: this.currentUser.dateNaissance || '',
+                    pseudo: this.currentUser.pseudo || '',
+                    password: this.currentUser.password || '',
                     interets: this.currentUser.interets || '',
                     preferencesRencontre: this.currentUser.preferencesRencontre || '',
                     disponibilite: this.currentUser.disponibilite || ''

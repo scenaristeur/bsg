@@ -21,7 +21,7 @@ export const userService = {
      */
     async getUsers() {
         try {
-            const response = await apiClient.get('/users')
+            const response = await apiClient.get('/api/users')
             return response.data
         } catch (error) {
             throw new Error('Erreur lors de la récupération des utilisateurs')
@@ -35,9 +35,13 @@ export const userService = {
      */
     async createUser(userData) {
         try {
-            const response = await apiClient.post('/users', userData)
+            console.log('Appel API POST vers:', '/api/users');
+            console.log('Données envoyées:', userData);
+            const response = await apiClient.post('/api/users', userData)
+            console.log('Réponse du serveur:', response.data);
             return response.data
         } catch (error) {
+            console.error('Erreur complète de la requête:', error);
             if (error.response) {
                 throw new Error(error.response.data.error || 'Erreur lors de la création de l\'utilisateur')
             } else {
@@ -76,7 +80,7 @@ export const userService = {
      */
     async deleteUser(userId) {
         try {
-            const response = await apiClient.delete('/users', { data: { id: userId } })
+            const response = await apiClient.delete('/api/users', { data: { id: userId } })
             return response.data
         } catch (error) {
             throw new Error('Erreur lors de la suppression de l\'utilisateur')

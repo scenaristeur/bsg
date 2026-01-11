@@ -27,6 +27,31 @@
                 <input id="password" v-model="formData.password" type="password" required />
             </div>
 
+            <div class="form-group">
+                <label for="dateOfBirth">Date de naissance :</label>
+                <input id="dateOfBirth" v-model="formData.dateOfBirth" type="date" />
+            </div>
+
+            <div class="form-group">
+                <label for="interests">Centres d'intérêt :</label>
+                <textarea id="interests" v-model="formData.interests" placeholder="Séparés par des virgules"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="meetingPreference">Préférences de rencontre :</label>
+                <select id="meetingPreference" v-model="formData.meetingPreference">
+                    <option value="transport">Transport en commun</option>
+                    <option value="lieu">Lieu public</option>
+                    <option value="restaurant">Restaurant</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="availability">Disponibilité :</label>
+                <input id="availability" v-model="formData.availability" type="text"
+                    placeholder="Ex: Soirées, Week-ends" />
+            </div>
+
             <button type="submit" :disabled="loading">
                 {{ loading ? 'Inscription en cours...' : 'S\'inscrire' }}
             </button>
@@ -86,10 +111,10 @@ export default {
                     pseudo: this.formData.username,
                     email: this.formData.email,
                     password: this.formData.password,
-                    age: null,
-                    interets: '',
-                    preferencesRencontre: 'transport',
-                    disponibilite: ''
+                    dateNaissance: this.formData.dateOfBirth || null,
+                    interets: this.formData.interests || '',
+                    preferencesRencontre: this.formData.meetingPreference || 'transport',
+                    disponibilite: this.formData.availability || ''
                 }
 
                 const result = await userStore.register(userData)
