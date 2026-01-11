@@ -37,60 +37,6 @@ app.use('/api/rencontres', rencontresRouter)
 app.use('/api/interactions', interactionsRouter)
 app.use('/api/evenements', evenementsRouter)
 
-// Routes supplémentaires (anciennes routes qui ne sont plus dans les routeurs)
-app.get("/users", async (req, res) => {
-    const db = await getDB()
-    const users = await db.all(
-        "SELECT * FROM users"
-    )
-    return res.json(users)
-})
-
-app.delete("/users", async (req, res) => {
-    const body = req.body
-    const db = await getDB()
-    console.log("delete", body)
-    const id = body.id
-    const sql = 'DELETE FROM users WHERE id = ?'
-    let result = await db.run(sql, (id))
-    console.log("result", result)
-    res.json({ message: "Utilisateur effacé", id: id })
-
-})
-
-app.post("/users", async (req, res) => {
-    const body = req.body
-
-    // Vérification de la présence du corps de la requête
-    if (!body) {
-        return res.status(400).json({ error: "Aucune donnée reçue" })
-    }
-
-    // Vérification de la présence du nom
-    const nom = body.nom
-    const prenom = body.prenom
-    const pseudo = body.pseudo
-    const email = body.email
-    const password = body.password
-    if (!nom || typeof nom !== "string") {
-        return res.status(400).json({ error: "Nom invalide" })
-    }
-
-    // Hachage du mot de passe
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
-
-    console.log("email", email)
-    const db = await getDB()
-
-    await db.run(
-        `INSERT INTO users (nom, prenom, pseudo, email, password) VALUES ('${nom}', '${prenom}', '${pseudo}', '${email}', '${hashedPassword}')`)
-    const user = await db.get(
-        "SELECT * FROM users WHERE id = (SELECT last_insert_rowid())"
-    )
-    res.statusCode = 201
-    res.json({ message: "Utilisateur créé", user: user })
-})
-
 // Route de connexion
 app.post("/login", async (req, res) => {
     const { email, password } = req.body

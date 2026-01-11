@@ -54,9 +54,13 @@ export const userService = {
      */
     async updateUser(userId, userData) {
         try {
-            const response = await apiClient.put(`/users/${userId}`, userData)
+            console.log('Appel API PUT vers:', `/api/users/${userId}`);
+            console.log('Données envoyées:', userData);
+            const response = await apiClient.put(`/api/users/${userId}`, userData)
+            console.log('Réponse du serveur:', response.data);
             return response.data
         } catch (error) {
+            console.error('Erreur complète de la requête:', error);
             if (error.response) {
                 throw new Error(error.response.data.error || 'Erreur lors de la mise à jour de l\'utilisateur')
             } else {

@@ -46,8 +46,8 @@
                         <input v-model="userProfile.email" disabled />
                     </div>
                     <div class="form-group">
-                        <label>Âge:</label>
-                        <input v-model="userProfile.age" type="number" />
+                        <label>Date de naissance:</label>
+                        <input v-model="userProfile.dateNaissance" type="date" />
                     </div>
                     <div class="form-group">
                         <label>Centres d'intérêt:</label>
@@ -193,7 +193,7 @@ export default {
                 nom: '',
                 prenom: '',
                 email: '',
-                age: null,
+                dateNaissance: '',
                 interets: '',
                 preferencesRencontre: '',
                 disponibilite: ''
@@ -228,7 +228,7 @@ export default {
                     nom: this.currentUser.nom || '',
                     prenom: this.currentUser.prenom || '',
                     email: this.currentUser.email || '',
-                    age: this.currentUser.age || null,
+                    dateNaissance: this.currentUser.dateNaissance || '',
                     interets: this.currentUser.interets || '',
                     preferencesRencontre: this.currentUser.preferencesRencontre || '',
                     disponibilite: this.currentUser.disponibilite || ''
@@ -280,6 +280,10 @@ export default {
             try {
                 // Envoyer les modifications au backend
                 const userStore = useUserStore()
+                console.log('Données envoyées au backend:', {
+                    userId: this.currentUser.id,
+                    userData: this.userProfile
+                });
                 const response = await userService.updateUser(this.currentUser.id, this.userProfile)
                 // Mettre à jour le store avec les nouvelles données
                 userStore.setCurrentUser(response.user)

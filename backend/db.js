@@ -24,13 +24,15 @@ export async function initDB() {
     pseudo      TEXT        NOT NULL,
     email       TEXT        NOT NULL,
     password    TEXT        NOT NULL,
-    age         INTEGER,
+    dateNaissance TEXT,
     interets    TEXT,
     preferencesRencontre TEXT,
     disponibilite TEXT,
     createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
     )    
     `)
+
+
 
     // Table pour les missions
     await dbInstance.exec(`
@@ -107,7 +109,7 @@ async function insertDefaultUsers() {
                 pseudo: "user1",
                 email: "user1@bsg.fr",
                 password: "bsg",
-                age: 32,
+                dateNaissance: "1994-01-13",
                 interets: "Littérature, cinéma, voyages",
                 preferencesRencontre: "transport",
                 disponibilite: "Soirées, Week-ends"
@@ -118,7 +120,7 @@ async function insertDefaultUsers() {
                 pseudo: "user2",
                 email: "user2@bsg.fr",
                 password: "bsg",
-                age: 28,
+                dateNaissance: "1998-05-22",
                 interets: "Musique, sport, cuisine",
                 preferencesRencontre: "lieu",
                 disponibilite: "Week-ends"
@@ -129,7 +131,7 @@ async function insertDefaultUsers() {
                 pseudo: "user3",
                 email: "user3@bsg.fr",
                 password: "bsg",
-                age: 35,
+                dateNaissance: "1989-11-08",
                 interets: "Photographie, nature, randonnée",
                 preferencesRencontre: "restaurant",
                 disponibilite: "Soirées"
@@ -149,9 +151,10 @@ async function insertDefaultUsers() {
 
                 // Insertion de l'utilisateur
                 await dbInstance.run(
-                    `INSERT INTO users (nom, prenom, pseudo, email, password, age, interets, preferencesRencontre, disponibilite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [user.nom, user.prenom, user.pseudo, user.email, hashedPassword, user.age, user.interets, user.preferencesRencontre, user.disponibilite]
+                    `INSERT INTO users (nom, prenom, pseudo, email, password, dateNaissance, interets, preferencesRencontre, disponibilite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [user.nom, user.prenom, user.pseudo, user.email, hashedPassword, user.dateNaissance, user.interets, user.preferencesRencontre, user.disponibilite]
                 )
+                console.log(`Utilisateur créé avec dateNaissance: ${user.dateNaissance}`);
                 console.log(`Utilisateur créé : ${user.email}`)
             }
         }

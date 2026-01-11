@@ -11,7 +11,7 @@ const SALT_ROUNDS = 10
 router.get('/', async (req, res) => {
     try {
         const db = await getDB()
-        const users = await db.all('SELECT * FROM users ORDER BY createdAt DESC')
+        const users = await db.all('SELECT *, strftime(\'%Y-%m-%d\', dateNaissance) as dateNaissance FROM users ORDER BY createdAt DESC')
         // Retirer les mots de passe des utilisateurs pour la réponse
         const usersWithoutPasswords = users.map(user => {
             const { password, ...userWithoutPassword } = user
@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const db = await getDB()
-        const user = await db.get('SELECT * FROM users WHERE id = ?', [req.params.id])
+        const user = await db.get('SELECT *, strftime(\'%Y-%m-%d\', dateNaissance) as dateNaissance FROM users WHERE id = ?', [req.params.id])
 
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' })
@@ -46,7 +46,7 @@ router.get('/:id', async (req, res) => {
 // Créer un nouvel utilisateur
 router.post('/', async (req, res) => {
     try {
-        const { nom, prenom, pseudo, email, password, age, interets, preferencesRencontre, disponibilite } = req.body
+        const { nom, prenom, pseudo, email, password, dateNaissance, interets, preferencesRencontre, disponibilite } = req.body
         const db = await getDB()
 
         // Vérification de l'email unique
@@ -59,8 +59,8 @@ router.post('/', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
 
         const result = await db.run(
-            'INSERT INTO users (nom, prenom, pseudo, email, password, age, interets, preferencesRencontre, disponibilite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [nom, prenom, pseudo, email, hashedPassword, age, interets, preferencesRencontre, disponibilite]
+            'INSERT INTO users (nom, prenom, pseudo, email, password, dateNaissance, interets, preferencesRencontre, disponibilite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [nom, prenom, pseudo, email, hashedPassword, dateNaissance, interets, preferencesRencontre, disponibilite]
         )
 
         const user = await db.get('SELECT * FROM users WHERE id = ?', [result.lastID])
@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
 // Mettre à jour un utilisateur
 router.put('/:id', async (req, res) => {
     try {
-        const { nom, prenom, pseudo, email, password, age, interets, preferencesRencontre, disponibilite } = req.body
+        const { nom, prenom, pseudo, email, password, dateNaissance, interets, preferencesRencontre, disponibilite } = req.body
         const db = await getDB()
 
         // Vérification de l'email unique (sauf pour cet utilisateur)
@@ -94,8 +94,8 @@ router.put('/:id', async (req, res) => {
         }
 
         const result = await db.run(
-            'UPDATE users SET nom = ?, prenom = ?, pseudo = ?, email = ?, password = ?, age = ?, interets = ?, preferencesRencontre = ?, disponibilite = ? WHERE id = ?',
-            [nom, prenom, pseudo, email, hashedPassword, age, interets, preferencesRencontre, disponibilite, req.params.id]
+            'UPDATE users SET nom = ?, prenom = ?, pseudo = ?, email = ?, password = ?, dateNaissance = ?, interets = ?, preferencesRencontre = ?, disponibilite = ? WHERE id = ?',
+            [nom, prenom, pseudo, email, hashedPassword, dateNaissance, interets, preferencesRencontre, disponibilite, req.params.id]
         )
 
         if (result.changes === 0) {
