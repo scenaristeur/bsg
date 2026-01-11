@@ -1,7 +1,27 @@
 import { open } from "sqlite"
+import sqlite3 from "sqlite3"
+
+let dbInstance = null
 
 export async function initDB() {
     dbInstance = await open({
-        filename: "db/database.sqlite"
+        filename: "db/database.sqlite",
+        driver: sqlite3.Database
     })
+
+    await dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+    id          INTEGER     PRIMARY KEY AUTOINCREMENT,
+    name        TEXT        NOT NULL,
+    createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )    
+    `)
+
+}
+
+export async function getDB() {
+    if (!dbInstance) {
+        throw new Error("initDB must be called before getDB")
+    }
+    return dbInstance
 }
