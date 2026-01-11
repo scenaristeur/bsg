@@ -1,0 +1,22 @@
+{
+  "name": "bsg-backend",
+  "version": "1.0.0",
+  "description": "- https://www.youtube.com/watch?v=fqfNObPWeUw",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "nodemon": "^3.1.11"
+  }
+}
