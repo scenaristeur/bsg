@@ -13,12 +13,47 @@ import HelloWorld from './components/HelloWorld.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/signup">S'inscrire</RouterLink>
+        <RouterLink to="/login" v-if="!isLoggedIn">Se connecter</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/users">Liste des utilisateurs</RouterLink>
+        <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">Se déconnecter</button>
       </nav>
     </div>
   </header>
 
   <RouterView />
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      isLoggedIn: false
+    }
+  },
+  mounted() {
+    this.checkAuthStatus()
+  },
+  watch: {
+    '$route'() {
+      this.checkAuthStatus()
+    }
+  },
+  methods: {
+    checkAuthStatus() {
+      this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    },
+    handleLogout() {
+      // Supprimer les données de session
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('currentUser')
+
+      // Rediriger vers la page de connexion
+      this.$router.push('/login')
+    }
+  }
+}
+</script>
 
 <style scoped>
 header {
@@ -54,6 +89,21 @@ nav a {
 
 nav a:first-of-type {
   border: 0;
+}
+
+.logout-button {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 1rem;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
 }
 
 @media (min-width: 1024px) {

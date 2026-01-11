@@ -3,25 +3,25 @@ import { getDB, initDB } from './db.js'
 import bodyParser from 'body-parser'
 import cors from "cors";
 import path from 'path'
+import bcrypt from 'bcrypt'
 // import dotenv from "dotenv"
 // dotenv.config()
 
 const PORT = process.env.PORT || 3000
+const SALT_ROUNDS = 10
 
 const app = express()
 app.use(bodyParser.json())
 app.use(express.static("public"))
+app.use(cors({
+    'origin': ['http://localhost:5173', 'http://localhost:3000'],
+    'allowedHeaders': ['sessionId', 'Content-Type', 'Authorization', 'authorization'],
+    'exposedHeaders': ['sessionId'],
+    'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    'credentials': true,
+    'preflightContinue': false
+}));
 initDB()
-
-// app.use(cors({
-//     'origin': '*'
-//     // 'allowedHeaders': ['sessionId', 'Content-Type', 'Authorization', 'authorization'],
-//     // 'exposedHeaders': ['sessionId'],
-//     // 'origin': ['https://eccentrictoad.com', 'https://www.eccentrictoad.com'],
-//     // 'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//     // 'credentials': false,
-//     // 'preflightContinue': false
-// }));
 
 app.get("/", (req, res) => {
     // res.send("serveur backend BSG")
@@ -66,16 +66,61 @@ app.post("/users", async (req, res) => {
         return res.status(400).json({ error: "Nom invalide" })
     }
 
+    // Hachage du mot de passe
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+
     console.log("email", email)
     const db = await getDB()
 
     await db.run(
-        `INSERT INTO users (nom, prenom, pseudo, email, password) VALUES ('${nom}', '${prenom}', '${pseudo}', '${email}', '${password}')`)
+        `INSERT INTO users (nom, prenom, pseudo, email, password) VALUES ('${nom}', '${prenom}', '${pseudo}', '${email}', '${hashedPassword}')`)
     const user = await db.get(
         "SELECT * FROM users WHERE id = (SELECT last_insert_rowid())"
     )
     res.statusCode = 201
     res.json({ message: "Utilisateur créé", user: user })
+})
+
+// Route de connexion
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body
+
+    // Vérification des données d'entrée
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email et mot de passe requis" })
+    }
+
+    try {
+        const db = await getDB()
+
+        // Récupération de l'utilisateur par email
+        const user = await db.get(
+            "SELECT * FROM users WHERE email = ?",
+            [email]
+        )
+
+        // Vérification si l'utilisateur existe
+        if (!user) {
+            return res.status(401).json({ error: "Identifiants incorrects" })
+        }
+
+        // Comparaison du mot de passe fourni avec le hachage stocké
+        const isValidPassword = await bcrypt.compare(password, user.password)
+
+        if (!isValidPassword) {
+            return res.status(401).json({ error: "Identifiants incorrects" })
+        }
+
+        // Si tout est bon, retourner l'utilisateur (sans le mot de passe)
+        const { password: _, ...userWithoutPassword } = user
+        res.json({
+            message: "Connexion réussie",
+            user: userWithoutPassword
+        })
+    } catch (error) {
+        console.error("Erreur de connexion:", error)
+        res.status(500).json({ error: "Erreur serveur lors de la connexion" })
+    }
 })
 
 
