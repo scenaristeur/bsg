@@ -23,12 +23,21 @@ app.use(cors({
 }));
 initDB()
 
-app.get("/", (req, res) => {
-    // res.send("serveur backend BSG")
-    res.sendFile(path.join(process.cwd(), "/views/index.html"))
+// Importer les nouveaux routeurs
+import usersRouter from './routes/users.js'
+import missionsRouter from './routes/missions.js'
+import rencontresRouter from './routes/rencontres.js'
+import interactionsRouter from './routes/interactions.js'
+import evenementsRouter from './routes/evenements.js'
 
-})
+// Utilisation des routeurs
+app.use('/api/users', usersRouter)
+app.use('/api/missions', missionsRouter)
+app.use('/api/rencontres', rencontresRouter)
+app.use('/api/interactions', interactionsRouter)
+app.use('/api/evenements', evenementsRouter)
 
+// Routes supplémentaires (anciennes routes qui ne sont plus dans les routeurs)
 app.get("/users", async (req, res) => {
     const db = await getDB()
     const users = await db.all(
@@ -48,6 +57,7 @@ app.delete("/users", async (req, res) => {
     res.json({ message: "Utilisateur effacé", id: id })
 
 })
+
 app.post("/users", async (req, res) => {
     const body = req.body
 
@@ -123,6 +133,11 @@ app.post("/login", async (req, res) => {
     }
 })
 
+app.get("/", (req, res) => {
+    // res.send("serveur backend BSG")
+    res.sendFile(path.join(process.cwd(), "/views/index.html"))
+
+})
 
 app.get("/about", (req, res) => {
     res.type("html")

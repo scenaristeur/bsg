@@ -44,6 +44,7 @@
 
 <script>
 import { userService } from '../services/userService'
+import { useUserStore } from '../stores/user'
 
 export default {
     name: 'SignUp',
@@ -75,26 +76,37 @@ export default {
                     throw new Error('Tous les champs sont requis')
                 }
 
+                // Utilisation du store utilisateur
+                const userStore = useUserStore()
+
                 // Appel au service pour créer l'utilisateur
                 const userData = {
                     nom: this.formData.lastName,
                     prenom: this.formData.firstName,
                     pseudo: this.formData.username,
                     email: this.formData.email,
-                    password: this.formData.password
+                    password: this.formData.password,
+                    age: null,
+                    interets: '',
+                    preferencesRencontre: 'transport',
+                    disponibilite: ''
                 }
 
-                const result = await userService.createUser(userData)
+                const result = await userStore.register(userData)
 
-                // Afficher un message de succès
-                this.success = 'Inscription réussie ! Vous pouvez maintenant vous connecter.'
+                if (result.success) {
+                    // Afficher un message de succès
+                    this.success = 'Inscription réussie ! Vous pouvez maintenant vous connecter.'
 
-                // Réinitialiser le formulaire après un court délai
-                setTimeout(() => {
-                    this.resetForm()
-                    // Rediriger vers la page de connexion après inscription réussie
-                    this.$router.push('/login')
-                }, 2000)
+                    // Réinitialiser le formulaire après un court délai
+                    setTimeout(() => {
+                        this.resetForm()
+                        // Rediriger vers la page de connexion après inscription réussie
+                        this.$router.push('/login')
+                    }, 2000)
+                } else {
+                    this.error = result.error
+                }
 
             } catch (err) {
                 this.error = err.message || 'Une erreur est survenue lors de l\'inscription'

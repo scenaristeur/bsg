@@ -16,6 +16,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/signup">S'inscrire</RouterLink>
         <RouterLink to="/login" v-if="!isLoggedIn">Se connecter</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/users">Liste des utilisateurs</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/game">Bienveillant Seduction Game</RouterLink>
         <button v-if="isLoggedIn" @click="handleLogout" class="logout-button">Se déconnecter</button>
       </nav>
     </div>
@@ -25,6 +26,8 @@ import HelloWorld from './components/HelloWorld.vue'
 </template>
 
 <script>
+import { useUserStore } from './stores/user'
+
 export default {
   data() {
     return {
@@ -41,12 +44,14 @@ export default {
   },
   methods: {
     checkAuthStatus() {
-      this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+      // Utilisation du store utilisateur
+      const userStore = useUserStore()
+      this.isLoggedIn = userStore.isLoggedIn
     },
     handleLogout() {
-      // Supprimer les données de session
-      localStorage.removeItem('isLoggedIn')
-      localStorage.removeItem('currentUser')
+      // Utilisation du store utilisateur pour la déconnexion
+      const userStore = useUserStore()
+      userStore.logout()
 
       // Rediriger vers la page de connexion
       this.$router.push('/login')

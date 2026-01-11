@@ -47,6 +47,25 @@ export const userService = {
     },
 
     /**
+     * Met à jour un utilisateur
+     * @param {number} userId - ID de l'utilisateur à mettre à jour
+     * @param {Object} userData - Données de l'utilisateur à mettre à jour
+     * @returns {Promise<Object>} Utilisateur mis à jour
+     */
+    async updateUser(userId, userData) {
+        try {
+            const response = await apiClient.put(`/users/${userId}`, userData)
+            return response.data
+        } catch (error) {
+            if (error.response) {
+                throw new Error(error.response.data.error || 'Erreur lors de la mise à jour de l\'utilisateur')
+            } else {
+                throw new Error('Erreur de connexion au serveur')
+            }
+        }
+    },
+
+    /**
      * Supprime un utilisateur
      * @param {number} userId - ID de l'utilisateur à supprimer
      * @returns {Promise<Object>} Résultat de la suppression

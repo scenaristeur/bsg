@@ -33,6 +33,7 @@
 
 <script>
 import { userService } from '../services/userService'
+import { useUserStore } from '../stores/user'
 
 export default {
     name: 'Login',
@@ -59,25 +60,28 @@ export default {
                     throw new Error('Email et mot de passe sont requis')
                 }
 
+                // Utilisation du store utilisateur
+                const userStore = useUserStore()
+
                 // Appel au service pour connecter l'utilisateur
                 const credentials = {
                     email: this.formData.email,
                     password: this.formData.password
                 }
 
-                const result = await userService.loginUser(credentials)
+                const result = await userStore.login(credentials.email, credentials.password)
 
-                // Afficher un message de succès
-                this.success = 'Connexion réussie ! Redirection...'
+                if (result.success) {
+                    // Afficher un message de succès
+                    this.success = 'Connexion réussie ! Redirection...'
 
-                // Stocker les informations de l'utilisateur dans le localStorage
-                localStorage.setItem('currentUser', JSON.stringify(result.user))
-                localStorage.setItem('isLoggedIn', 'true')
-
-                // Rediriger vers la page d'accueil après connexion réussie
-                setTimeout(() => {
-                    this.$router.push('/')
-                }, 1500)
+                    // Rediriger vers la page de jeu après connexion réussie
+                    setTimeout(() => {
+                        this.$router.push('/game')
+                    }, 1500)
+                } else {
+                    this.error = result.error
+                }
 
             } catch (err) {
                 this.error = err.message || 'Erreur lors de la connexion'

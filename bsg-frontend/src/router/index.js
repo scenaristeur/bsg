@@ -1,14 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
-// Middleware d'authentification
-const requireAuth = (to, from, next) => {
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-  if (!isLoggedIn && to.name !== 'login') {
-    next({ name: 'login' })
-  } else {
-    next()
-  }
+// Vérification d'authentification
+const isAuthenticated = () => {
+  return localStorage.getItem('isLoggedIn') === 'true'
 }
 
 const router = createRouter({
@@ -44,9 +39,20 @@ const router = createRouter({
       name: 'users',
       // Lazy loading for the user list component
       component: () => import('../components/UserList.vue'),
-      beforeEnter: requireAuth
+    },
+    {
+      path: '/game',
+      name: 'game',
+      // Lazy loading for the game interface component
+      component: () => import('../components/GameInterface.vue'),
     },
   ],
+})
+
+// Middleware global d'authentification
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'login' && !isAuthenticated()) next({ name: 'login' })
+  else next()
 })
 
 export default router
