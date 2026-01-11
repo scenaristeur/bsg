@@ -21,6 +21,14 @@
                 <input type="text" id="prenom" name="prenom" required>
             </div>
             <div class="form-group">
+                <label for="pseudo">Pseudo:</label>
+                <input type="text" id="pseudo" name="pseudo" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
             </div>
@@ -35,7 +43,9 @@
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
+                    <th>Pseudo</th>
                     <th>Email</th>
+                    <th>Creation</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,29 +54,6 @@
         </table>
     </div>
 
-    <script>
-        document.getElementById('userForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const nom = document.getElementById('nom').value;
-            const prenom = document.getElementById('prenom').value;
-            const email = document.getElementById('email').value;
-
-            const tableBody = document.querySelector('#userTable tbody');
-            const newRow = document.createElement('tr');
-
-            newRow.innerHTML = `
-                <td>${nom}</td>
-                <td>${prenom}</td>
-                <td>${email}</td>
-            `;
-
-            tableBody.appendChild(newRow);
-
-            // Réinitialiser le formulaire
-            document.getElementById('userForm').reset();
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 

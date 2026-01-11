@@ -9,19 +9,23 @@ export async function initDB() {
         driver: sqlite3.Database
     })
 
+    dbInstance.on('trace', (data) => {
+        console.log(data)
+    })
+
     // email       TEXT        NOT NULL,
     // password    
     await dbInstance.exec(`
     CREATE TABLE IF NOT EXISTS users (
     id          INTEGER     PRIMARY KEY AUTOINCREMENT,
-    name        TEXT        NOT NULL,
-
+    nom         TEXT        NOT NULL,
+    prenom      TEXT        NOT NULL,
+    pseudo      TEXT        NOT NULL,
+    email       TEXT        NOT NULL,
+    password    TEXT        NOT NULL,
     createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
     )    
     `)
-
-    // await dbInstance.exec('CREATE TABLE tbl (col TEXT)')
-    // await dbInstance.exec('INSERT INTO tbl VALUES ("test")')
 
 }
 

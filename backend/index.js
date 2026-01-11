@@ -47,16 +47,20 @@ app.post("/users", async (req, res) => {
     }
 
     // Vérification de la présence du nom
-    const name = body.name
-    if (!name || typeof name !== "string") {
+    const nom = body.nom
+    const prenom = body.prenom
+    const pseudo = body.pseudo
+    const email = body.email
+    const password = body.password
+    if (!nom || typeof nom !== "string") {
         return res.status(400).json({ error: "Nom invalide" })
     }
 
+    console.log("email", email)
     const db = await getDB()
 
     await db.run(
-        'INSERT INTO users (name) VALUES (?)'
-        , name)
+        `INSERT INTO users (nom, prenom, pseudo, email, password) VALUES ('${nom}', '${prenom}', '${pseudo}', '${email}', '${password}')`)
     const user = await db.get(
         "SELECT * FROM users WHERE id = (SELECT last_insert_rowid())"
     )
