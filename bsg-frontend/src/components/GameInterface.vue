@@ -30,130 +30,10 @@
 
         <!-- Main Content -->
         <main class="game-content">
-            <!-- Profile View -->
-            <div v-if="currentView === 'profile'" class="profile-view">
-                <h2>Mon Profil</h2>
-                <div class="profile-form">
-                    <div class="form-group">
-                        <label>Nom:</label>
-                        <input v-model="userProfile.nom" disabled />
-                    </div>
-                    <div class="form-group">
-                        <label>Prénom:</label>
-                        <input v-model="userProfile.prenom" disabled />
-                    </div>
-                    <div class="form-group">
-                        <label>Pseudo:</label>
-                        <input v-model="userProfile.pseudo" disabled />
-                    </div>
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <input v-model="userProfile.email" disabled />
-                    </div>
-                    <div class="form-group">
-                        <label>Password:</label>
-                        <input v-model="userProfile.password" />
-                    </div>
-                    <div class="form-group">
-                        <label>Date de naissance:</label>
-                        <input v-model="userProfile.dateNaissance" type="date" />
-                    </div>
-                    <div class="form-group">
-                        <label>Centres d'intérêt:</label>
-                        <textarea v-model="userProfile.interets"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Préférences de rencontre:</label>
-                        <select v-model="userProfile.preferencesRencontre">
-                            <option value="transport">Transport en commun</option>
-                            <option value="lieu">Lieu public</option>
-                            <option value="restaurant">Restaurant</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Disponibilité:</label>
-                        <input v-model="userProfile.disponibilite" type="text" placeholder="Ex: Soirées, Week-ends" />
-                    </div>
-                    <button @click="saveProfile" class="save-btn">Sauvegarder</button>
-                </div>
-            </div>
-
-            <!-- Notifications View -->
-            <div v-else-if="currentView === 'notifications'" class="notifications-view">
-                <h2>Notifications de Rencontre</h2>
-                <div class="notification-card" v-if="activeNotification">
-                    <div class="notification-header">
-                        <h3>Rendez-vous imminent !</h3>
-                        <span class="time">{{ activeNotification.time }}</span>
-                    </div>
-                    <div class="notification-details">
-                        <p><strong>Lieu:</strong> {{ activeNotification.lieu }}</p>
-                        <p><strong>Transport:</strong> {{ activeNotification.transport }}</p>
-                        <p><strong>Arrêt:</strong> {{ activeNotification.arret }}</p>
-                        <p><strong>Instructions:</strong></p>
-                        <ul>
-                            <li>Direction le fond du bus</li>
-                            <li>Rechercher un partenaire avec une <strong>écharpe bleue</strong></li>
-                            <li>Utiliser le mot de passe: <strong>"étagère"</strong></li>
-                        </ul>
-                    </div>
-                    <div class="notification-actions">
-                        <button @click="acceptMeeting" class="accept-btn">Accepter</button>
-                        <button @click="declineMeeting" class="decline-btn">Refuser</button>
-                    </div>
-                </div>
-                <div v-else class="no-notifications">
-                    <p>Aucune notification active pour le moment.</p>
-                </div>
-            </div>
-
-            <!-- Missions View -->
-            <div v-else-if="currentView === 'missions'" class="missions-view">
-                <h2>Mes Missions</h2>
-                <div class="mission-card" v-if="currentMission">
-                    <div class="mission-header">
-                        <h3>{{ currentMission.titre }}</h3>
-                        <span class="difficulty">{{ currentMission.difficulte }}</span>
-                    </div>
-                    <div class="mission-description">
-                        <p>{{ currentMission.description }}</p>
-                    </div>
-                    <div class="mission-objectives">
-                        <h4>Objectifs:</h4>
-                        <ul>
-                            <li v-for="objectif in currentMission.objectifs" :key="objectif">{{ objectif }}</li>
-                        </ul>
-                    </div>
-                    <div class="mission-hints" v-if="currentMission.indices">
-                        <h4>Indices:</h4>
-                        <p>{{ currentMission.indices }}</p>
-                    </div>
-                    <div class="mission-actions">
-                        <button @click="startMission" class="start-btn">Commencer la mission</button>
-                    </div>
-                </div>
-                <div v-else class="no-missions">
-                    <p>Aucune mission active pour le moment.</p>
-                </div>
-            </div>
-
-            <!-- Map View -->
-            <div v-else-if="currentView === 'map'" class="map-view">
-                <h2>Carte de Lyon</h2>
-                <div class="map-container">
-                    <div class="map-placeholder">
-                        <p>Carte interactive de Lyon avec les lieux de rencontre et missions</p>
-                        <p>Lieux marqués: {{ mapMarkers.length }} points</p>
-                    </div>
-                    <div class="map-markers">
-                        <div v-for="marker in mapMarkers" :key="marker.id" class="map-marker"
-                            :style="{ left: marker.x + '%', top: marker.y + '%' }">
-                            <div class="marker-icon">{{ marker.type }}</div>
-                            <div class="marker-label">{{ marker.label }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ProfileView v-if="currentView === 'profile'" />
+            <NotificationsView v-else-if="currentView === 'notifications'" />
+            <MissionsView v-else-if="currentView === 'missions'" />
+            <MapView v-else-if="currentView === 'map'" />
         </main>
 
         <!-- Mission Modal -->
@@ -183,32 +63,26 @@
 
 <script>
 import { useUserStore } from '../stores/user'
-import { userService } from '../services/userService'
+import ProfileView from './game/ProfileView.vue'
+import NotificationsView from './game/NotificationsView.vue'
+import MissionsView from './game/MissionsView.vue'
+import MapView from './game/MapView.vue'
 
 export default {
     name: 'GameInterface',
+    components: {
+        ProfileView,
+        NotificationsView,
+        MissionsView,
+        MapView
+    },
     data() {
         return {
             currentView: 'profile',
-            activeNotification: null,
-            currentMission: null,
-            mapMarkers: [],
             showMissionModal: false,
             verificationPassword: '',
             verifiedPartner: null,
-            missionInfo: '',
-            // Données utilisateur réactives
-            userProfile: {
-                nom: '',
-                prenom: '',
-                email: '',
-                pseudo: '',
-                password: '',
-                dateNaissance: '',
-                interets: '',
-                preferencesRencontre: '',
-                disponibilite: ''
-            }
+            missionInfo: ''
         }
     },
     computed: {
@@ -217,70 +91,7 @@ export default {
             return userStore.currentUser
         }
     },
-    async mounted() {
-        // Vérifier si l'utilisateur est connecté via le store
-        const userStore = useUserStore()
-        if (!userStore.isLoggedIn) {
-            // Rediriger vers la page de connexion si aucun utilisateur n'est connecté
-            this.$router.push('/login')
-        }
-
-        // Synchroniser les données utilisateur
-        this.syncUserData();
-
-        // Charger les données initiales
-        await this.loadInitialData()
-    },
     methods: {
-        // Méthode pour synchroniser les données utilisateur
-        syncUserData() {
-            if (this.currentUser) {
-                this.userProfile = {
-                    nom: this.currentUser.nom || '',
-                    prenom: this.currentUser.prenom || '',
-                    email: this.currentUser.email || '',
-                    dateNaissance: this.currentUser.dateNaissance || '',
-                    pseudo: this.currentUser.pseudo || '',
-                    password: this.currentUser.password || '',
-                    interets: this.currentUser.interets || '',
-                    preferencesRencontre: this.currentUser.preferencesRencontre || '',
-                    disponibilite: this.currentUser.disponibilite || ''
-                }
-            }
-        },
-        async loadInitialData() {
-            try {
-                // Charger les marqueurs de la carte
-                this.mapMarkers = [
-                    { id: 1, type: 'R', label: 'Restaurant', x: 30, y: 40 },
-                    { id: 2, type: 'B', label: 'Bar', x: 60, y: 70 },
-                    { id: 3, type: 'T', label: 'Transport', x: 80, y: 20 }
-                ]
-
-                // Charger la mission actuelle (exemple)
-                this.currentMission = {
-                    titre: 'Le Mystère du Café',
-                    difficulte: 'Facile',
-                    description: 'Trouvez l\'indice caché dans le café de la place Bellecour pour découvrir le prochain lieu de la mission.',
-                    objectifs: [
-                        'Identifier le lieu de la mission',
-                        'Trouver l\'indice caché',
-                        'Résoudre l\'énigme'
-                    ],
-                    indices: 'L\'indice est caché dans le café, derrière le bar.'
-                }
-
-                // Charger la notification active (exemple)
-                this.activeNotification = {
-                    time: '18:30',
-                    lieu: 'Quartier de la Croix-Rousse',
-                    transport: 'Bus 34',
-                    arret: 'Lycée Lumière'
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement des données initiales:', error)
-            }
-        },
         logout() {
             // Utilisation du store utilisateur pour la déconnexion
             const userStore = useUserStore()
@@ -288,33 +99,6 @@ export default {
 
             // Rediriger vers la page de connexion
             this.$router.push('/login')
-        },
-        async saveProfile() {
-            try {
-                // Envoyer les modifications au backend
-                const userStore = useUserStore()
-                console.log('Données envoyées au backend:', {
-                    userId: this.currentUser.id,
-                    userData: this.userProfile
-                });
-                const response = await userService.updateUser(this.currentUser.id, this.userProfile)
-                // Mettre à jour le store avec les nouvelles données
-                userStore.setCurrentUser(response.user)
-                alert('Profil sauvegardé avec succès !')
-            } catch (error) {
-                console.error('Erreur lors de la sauvegarde du profil:', error)
-                alert('Erreur lors de la sauvegarde du profil')
-            }
-        },
-        acceptMeeting() {
-            alert('Rendez-vous accepté ! Préparez-vous à rencontrer votre partenaire.')
-        },
-        declineMeeting() {
-            alert('Rendez-vous refusé.')
-            this.activeNotification = null
-        },
-        startMission() {
-            alert('Mission commencée ! Bonne chance.')
         },
         verifyIdentity() {
             if (this.verificationPassword === 'étagère') {
@@ -342,6 +126,126 @@ export default {
 }
 </script>
 
-<style>
-@import './GameInterface.css';
+<style scoped>
+.game-interface {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logout-btn {
+    padding: 0.5rem 1rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.game-nav {
+    display: flex;
+    background-color: #e9ecef;
+    padding: 0.5rem;
+    gap: 0.25rem;
+}
+
+.game-nav button {
+    padding: 0.5rem 1rem;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.game-nav button:hover {
+    background-color: #5a6268;
+}
+
+.game-nav button.active {
+    background-color: #007bff;
+}
+
+.game-content {
+    flex: 1;
+    padding: 1rem;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.mission-modal {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 90%;
+}
+
+.verification-section {
+    margin-bottom: 1rem;
+}
+
+.mission-details {
+    margin-bottom: 1rem;
+}
+
+.mission-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+.close-btn {
+    padding: 0.5rem 1rem;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: #5a6268;
+}
 </style>
