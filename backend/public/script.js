@@ -78,6 +78,7 @@ form.addEventListener("submit", async (e) => {
     }
     console.log(user)
     await addUser(user)
+    document.getElementById('userForm').reset();
     await displayUsers()
 
 })
