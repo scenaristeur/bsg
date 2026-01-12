@@ -16,6 +16,24 @@ router.get('/', async (req, res) => {
     }
 })
 
+// Récupérer les missions d'un utilisateur spécifique
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const db = await getDB()
+        const missions = await db.all(`
+            SELECT m.*, ma.role, ma.statut 
+            FROM missions m 
+            JOIN missions_assignees ma ON m.id = ma.mission_id 
+            WHERE ma.user_id = ? 
+            ORDER BY m.createdAt DESC
+        `, [req.params.userId])
+        res.json(missions)
+    } catch (error) {
+        console.error('Erreur lors de la récupération des missions de l\'utilisateur:', error)
+        res.status(500).json({ error: 'Erreur serveur' })
+    }
+})
+
 // Récupérer une mission spécifique
 router.get('/:id', async (req, res) => {
     try {
@@ -106,58 +124,18 @@ router.post('/generate', async (req, res) => {
             const n8nData = await n8nResponse.json()
             console.log('Données reçues de n8n:', n8nData);
 
-            // // Insérer la mission dans la table missions
-            // const result = await db.run(
-            //     'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
-            //     [n8nData.titre, n8nData.description, n8nData.difficulte, n8nData.objectifs, n8nData.indices]
-            // )
-
-            // // Récupérer l'ID de la mission créée
-            // const missionId = result.lastID
-
-            // // Insérer l'assignation de la mission à l'utilisateur créateur
-            // await db.run(
-            //     'INSERT INTO missions_assignees (mission_id, user_id, role, statut) VALUES (?, ?, ?, ?)',
-            //     [missionId, userId, 'createur', 'initie']
-            // )
-
             // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
+            // La mission sera créée via le webhook-result
             res.status(201).json({
-                missionId: missionId,
                 message: 'Mission en cours de création via l\'agent n8n',
                 n8nResult: n8nData
             })
         } catch (fetchError) {
             console.error('Erreur lors de l\'appel à n8n:', fetchError);
-            // En cas d'erreur, on retourne une mission par défaut
-            // Insérer la mission par défaut
-            // const defaultMission = {
-            //     titre: 'Mission de test - Générée par l\'agent n8n',
-            //     description: 'Mission créée automatiquement par l\'agent IA selon vos préférences.',
-            //     difficulte: 'Moyen',
-            //     objectifs: 'Compléter la mission, Trouver l\'indice, Interagir avec le partenaire',
-            //     indices: 'L\'indice se trouve dans le café de la place Bellecour'
-            // };
-
-            // const result = await db.run(
-            //     'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
-            //     [defaultMission.titre, defaultMission.description, defaultMission.difficulte, defaultMission.objectifs, defaultMission.indices]
-            // )
-
-            // // Récupérer l'ID de la mission créée
-            // const missionId = result.lastID
-
-            // // Insérer l'assignation de la mission à l'utilisateur créateur
-            // await db.run(
-            //     'INSERT INTO missions_assignees (mission_id, user_id, role, statut) VALUES (?, ?, ?, ?)',
-            //     [missionId, userId, 'createur', 'initie']
-            // )
-
-            // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
-            res.status(201).json({
-                // missionId: missionId,
-                message: 'Mission créée, appel à n8n impossible (simulation)',
-                n8nResult: fetchError
+            // En cas d'erreur, on retourne une erreur
+            res.status(500).json({
+                error: 'Erreur lors de l\'appel à n8n',
+                message: fetchError.message
             })
         }
 

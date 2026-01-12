@@ -1,61 +1,23 @@
 <template>
-    <div class="missions-container">
+    <div class="missions-view">
         <h2>Missions</h2>
+        <GenerateMissionButton />
 
-        <div class="missions-header">
-            <button @click="showCreateForm = !showCreateForm" class="btn btn-primary">
-                {{ showCreateForm ? 'Annuler' : 'Créer une nouvelle mission' }}
-            </button>
-        </div>
+        <div class="missions-list">
+            <h3>Missions en cours</h3>
+            <div v-if="loading" class="loading">Chargement...</div>
 
-        <!-- Formulaire de création de mission -->
-        <div v-if="showCreateForm" class="mission-form">
-            <h3>Créer une nouvelle mission</h3>
-            <form @submit.prevent="createMission">
-                <div class="form-group">
-                    <label for="missionTitle">Titre:</label>
-                    <input id="missionTitle" v-model="newMission.title" type="text" required class="form-input" />
-                </div>
+            <div v-if="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </div>
 
-                <div class="form-group">
-                    <label for="missionDescription">Description:</label>
-                    <textarea id="missionDescription" v-model="newMission.description" required
-                        class="form-textarea"></textarea>
-                </div>
+            <div v-if="!loading && !errorMessage && userMissions.length === 0" class="no-missions">
+                Aucune mission en cours.
+            </div>
 
-                <div class="form-group">
-                    <label for="missionDifficulty">Difficulté:</label>
-                    <select id="missionDifficulty" v-model="newMission.difficulty" required class="form-select">
-                        <option value="Facile">Facile</option>
-                        <option value="Moyen">Moyen</option>
-                        <option value="Difficile">Difficile</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="missionObjectives">Objectifs (séparés par des virgules):</label>
-                    <input id="missionObjectives" v-model="newMission.objectives" type="text" class="form-input" />
-                </div>
-
-                <div class="form-group">
-                    <label for="missionHints">Indices:</label>
-                    <textarea id="missionHints" v-model="newMission.hints" class="form-textarea"></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-success">Créer la mission</button>
-            </form>
-        </div>
-
-        <div v-if="loading" class="loading">Chargement...</div>
-
-        <div v-if="errorMessage" class="error-message">
-            {{ errorMessage }}
-        </div>
-
-        <div class="missions-grid">
-            <div v-for="mission in missions" :key="mission.id" class="mission-card">
+            <div v-for="mission in userMissions" :key="mission.id" class="mission-card">
                 <div class="mission-header">
-                    <h3>{{ mission.titre }}</h3>
+                    <h4>{{ mission.titre }}</h4>
                     <span class="difficulty-badge" :class="mission.difficulte.toLowerCase()">
                         {{ mission.difficulte }}
                     </span>
@@ -65,7 +27,7 @@
                     <p class="mission-description">{{ mission.description }}</p>
 
                     <div v-if="mission.objectifs" class="mission-section">
-                        <h4>Objectifs:</h4>
+                        <h5>Objectifs:</h5>
                         <ul>
                             <li v-for="(objective, index) in mission.objectifs.split(',')" :key="index">
                                 {{ objective.trim() }}
@@ -74,12 +36,13 @@
                     </div>
 
                     <div v-if="mission.indices" class="mission-section">
-                        <h4>Indices:</h4>
+                        <h5>Indices:</h5>
                         <p>{{ mission.indices }}</p>
                     </div>
 
                     <div class="mission-meta">
-                        <p><strong>Créé le:</strong> {{ formatDate(mission.createdAt) }}</p>
+                        <p><strong>Créée le:</strong> {{ formatDate(mission.createdAt) }}</p>
+                        <p><strong>Statut:</strong> {{ mission.statut }}</p>
                     </div>
                 </div>
 
@@ -89,189 +52,138 @@
                 </div>
             </div>
         </div>
-
-        <div v-if="!loading && !errorMessage && missions.length === 0" class="no-missions">
-            Aucune mission disponible.
-        </div>
     </div>
 </template>
 
 <script>
+import { ref, onMounted, onUnmounted } from 'vue'
+import GenerateMissionButton from './GenerateMissionButton.vue'
+import { useUserStore } from '@/stores/user'
 import { api } from '../utils/api'
+import { io } from 'socket.io-client'
 
 export default {
     name: 'MissionsView',
-    data() {
-        return {
-            missions: [],
-            loading: false,
-            errorMessage: '',
-            showCreateForm: false,
-            newMission: {
-                title: '',
-                description: '',
-                difficulty: 'Facile',
-                objectives: '',
-                hints: ''
+    components: {
+        GenerateMissionButton
+    },
+    setup() {
+        const userMissions = ref([])
+        const loading = ref(false)
+        const errorMessage = ref('')
+        const userStore = useUserStore()
+        const socket = ref(null)
+
+        // Récupération des missions de l'utilisateur
+        const fetchUserMissions = async () => {
+            if (!userStore.currentUser) return
+
+            try {
+                loading.value = true
+                errorMessage.value = ''
+
+                // Utilisation de l'API existante
+                const response = await api.getMissions()
+                // Filtrer les missions pour ne garder que celles de l'utilisateur
+                userMissions.value = response.filter(mission =>
+                    mission.assignee && mission.assignee.user_id === userStore.currentUser.id
+                )
+            } catch (error) {
+                console.error('Erreur lors de la récupération des missions de l\'utilisateur:', error)
+                errorMessage.value = 'Erreur lors de la récupération des missions'
+            } finally {
+                loading.value = false
             }
         }
-    },
-    methods: {
-        // Récupération des missions depuis l'API
-        async fetchMissions() {
-            try {
-                this.loading = true
-                this.errorMessage = ''
-
-                const response = await api.getMissions()
-                this.missions = response.map(mission => ({
-                    ...mission,
-                    objectifs: mission.objectifs || '',
-                    indices: mission.indices || ''
-                }))
-
-            } catch (error) {
-                console.error('Erreur lors de la récupération des missions:', error)
-                this.errorMessage = 'Erreur lors de la récupération des missions'
-            } finally {
-                this.loading = false
-            }
-        },
-
-        // Création d'une nouvelle mission
-        async createMission() {
-            try {
-                const missionData = {
-                    titre: this.newMission.title,
-                    description: this.newMission.description,
-                    difficulte: this.newMission.difficulty,
-                    objectifs: this.newMission.objectives,
-                    indices: this.newMission.hints
-                }
-
-                await api.createMission(missionData)
-
-                // Réinitialisation du formulaire
-                this.newMission = {
-                    title: '',
-                    description: '',
-                    difficulty: 'Facile',
-                    objectives: '',
-                    hints: ''
-                }
-
-                this.showCreateForm = false
-
-                // Rafraîchissement de la liste des missions
-                await this.fetchMissions()
-
-            } catch (error) {
-                console.error('Erreur lors de la création de la mission:', error)
-                this.errorMessage = 'Erreur lors de la création de la mission'
-            }
-        },
 
         // Formatage de la date
-        formatDate(dateString) {
+        const formatDate = (dateString) => {
             if (!dateString) return 'Inconnue'
             const date = new Date(dateString)
             return date.toLocaleDateString('fr-FR')
-        },
+        }
 
         // Commencer une mission
-        startMission(missionId) {
+        const startMission = (missionId) => {
             console.log('Commencer la mission:', missionId)
             // Ici, vous pouvez rediriger vers la page de détails de la mission
-        },
+        }
 
         // Voir les détails d'une mission
-        viewMissionDetails(missionId) {
+        const viewMissionDetails = (missionId) => {
             console.log('Voir les détails de la mission:', missionId)
             // Ici, vous pouvez rediriger vers la page de détails de la mission
         }
-    },
-    mounted() {
-        this.fetchMissions()
+
+        // Initialisation du WebSocket
+        const initWebSocket = () => {
+            if (!userStore.currentUser) return
+
+            socket.value = io('http://localhost:3000', {
+                transports: ['websocket']
+            })
+
+            // Connexion au salon de l'utilisateur
+            socket.value.emit('joinRoom', `user_${userStore.currentUser.id}`)
+
+            // Écoute des notifications de nouvelles missions
+            socket.value.on('missionCreated', (data) => {
+                console.log('Nouvelle mission créée:', data)
+                // Rafraîchir la liste des missions
+                fetchUserMissions()
+            })
+
+            socket.value.on('connect', () => {
+                console.log('Connecté au serveur WebSocket')
+            })
+
+            socket.value.on('disconnect', () => {
+                console.log('Déconnecté du serveur WebSocket')
+            })
+        }
+
+        // Nettoyage des ressources WebSocket
+        const cleanupWebSocket = () => {
+            if (socket.value) {
+                socket.value.disconnect()
+            }
+        }
+
+        // Montage du composant
+        onMounted(() => {
+            if (userStore.currentUser) {
+                fetchUserMissions()
+                initWebSocket()
+            }
+        })
+
+        // Démontage du composant
+        onUnmounted(() => {
+            cleanupWebSocket()
+        })
+
+        return {
+            userMissions,
+            loading,
+            errorMessage,
+            formatDate,
+            startMission,
+            viewMissionDetails
+        }
     }
 }
 </script>
 
 <style scoped>
-.missions-container {
+.missions-view {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;
 }
 
-.missions-header {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.mission-form {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.mission-form h3 {
-    margin-top: 0;
-    color: #007bff;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.form-textarea {
-    height: 100px;
-    resize: vertical;
-}
-
-.btn {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
+.missions-list {
+    margin-top: 20px;
 }
 
 .loading {
@@ -287,10 +199,11 @@ export default {
     margin-bottom: 20px;
 }
 
-.missions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 20px;
+.no-missions {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-style: italic;
 }
 
 .mission-card {
@@ -299,6 +212,7 @@ export default {
     padding: 15px;
     background-color: #f9f9f9;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
 }
 
 .mission-header {
@@ -308,7 +222,7 @@ export default {
     margin-bottom: 10px;
 }
 
-.mission-header h3 {
+.mission-header h4 {
     margin: 0;
     color: #007bff;
 }
@@ -348,7 +262,7 @@ export default {
     margin-bottom: 10px;
 }
 
-.mission-section h4 {
+.mission-section h5 {
     margin: 0 0 5px 0;
     color: #007bff;
 }
@@ -370,19 +284,28 @@ export default {
     justify-content: flex-end;
 }
 
-.no-missions {
-    text-align: center;
-    padding: 40px;
-    color: #6c757d;
-    font-style: italic;
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
 }
 
 @media (max-width: 768px) {
-    .missions-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .missions-header {
+    .mission-header {
         flex-direction: column;
         gap: 10px;
     }
@@ -392,3 +315,4 @@ export default {
     }
 }
 </style>
+</content>

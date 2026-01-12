@@ -3,7 +3,12 @@ import { getDB } from '../db.js'
 import { compare } from 'bcrypt'
 
 const router = express.Router()
+const io = null
 
+router.setIo = function (io) {
+    io = io
+    console.log("io1", io)
+}
 /**
  * Endpoint pour recevoir les événements du webhook n8n
  * @route POST /api/n8n/webhook
@@ -210,7 +215,8 @@ router.post('/webhook-result', async (req, res) => {
         // Format attendu : {"titre": "...", "description": "...", "difficulte": "...", "objectifs": "...", "indices": "...", "user_id": 411}
         let missionData = undefined
         try {
-            missionData = JSON.parse(data.mission);
+            missionData = JSON.parse(data.mission.replaceAll("\\'", " '").replaceAll("\'", " '"));
+            console.log("data", data)
         }
         catch (e) {
             console.log(e)
@@ -249,6 +255,7 @@ router.post('/webhook-result', async (req, res) => {
             [missionId, missionData.user_id, 'createur', 'initie']
         )
 
+        console.log("io2", io)
         // Retourner une réponse de succès
         res.json({
             success: true,
