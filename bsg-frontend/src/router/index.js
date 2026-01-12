@@ -42,6 +42,12 @@ const router = createRouter({
       // Lazy loading for the game interface component
       component: () => import('../components/GameInterface.vue'),
     },
+    {
+      path: '/webhook-test',
+      name: 'webhook-test',
+      // Lazy loading for the webhook test component
+      component: () => import('../components/WebhookTest.vue'),
+    },
   ],
 })
 

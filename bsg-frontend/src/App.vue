@@ -30,6 +30,7 @@ const isLoggedIn = () => {
           <RouterLink to="/login" class="menu-item" v-if="!isLoggedIn()">Se connecter</RouterLink>
           <RouterLink to="/users" class="menu-item" v-if="isLoggedIn()">Liste des utilisateurs</RouterLink>
           <RouterLink to="/game" class="menu-item" v-if="isLoggedIn()">Bienveillant Seduction Game</RouterLink>
+          <RouterLink to="/webhook-test" class="menu-item" v-if="isLoggedIn()">Test Webhook</RouterLink>
           <button v-if="isLoggedIn()" @click="handleLogout" class="logout-button menu-item">Se déconnecter</button>
         </nav>
       </div>

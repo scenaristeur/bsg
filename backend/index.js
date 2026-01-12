@@ -29,6 +29,7 @@ import missionsRouter from './routes/missions.js'
 import rencontresRouter from './routes/rencontres.js'
 import interactionsRouter from './routes/interactions.js'
 import evenementsRouter from './routes/evenements.js'
+import n8nRouter from './routes/n8n.js'
 
 // Utilisation des routeurs
 app.use('/api/users', usersRouter)
@@ -36,6 +37,7 @@ app.use('/api/missions', missionsRouter)
 app.use('/api/rencontres', rencontresRouter)
 app.use('/api/interactions', interactionsRouter)
 app.use('/api/evenements', evenementsRouter)
+app.use('/api/n8n', n8nRouter)
 
 // Route de test pour vérifier que le serveur fonctionne
 app.get('/test', (req, res) => {

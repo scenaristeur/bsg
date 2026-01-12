@@ -4,7 +4,8 @@ import { userService } from '../services/userService'
 export const useUserStore = defineStore('user', {
     state: () => ({
         currentUser: null,
-        isLoggedIn: false
+        isLoggedIn: false,
+        currentMeeting: null // Pour gérer les sessions de rencontre
     }),
 
     actions: {
@@ -25,6 +26,7 @@ export const useUserStore = defineStore('user', {
         async logout() {
             this.currentUser = null
             this.isLoggedIn = false
+            this.currentMeeting = null
         },
 
         async register(userData) {
@@ -44,6 +46,14 @@ export const useUserStore = defineStore('user', {
             console.log("set user", user)
             this.currentUser = user
             this.isLoggedIn = true
+        },
+
+        setCurrentMeeting(meeting) {
+            this.currentMeeting = meeting
+        },
+
+        clearCurrentMeeting() {
+            this.currentMeeting = null
         }
     }
 
