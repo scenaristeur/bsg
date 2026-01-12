@@ -80,7 +80,7 @@
         "bodyParametersUi": {
           "parameter": [
             {
-              "name": "=text",
+              "name": "=mission",
               "value": "={{ $json.output }}"
             }
           ]
@@ -98,7 +98,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "=Créer automatiquement des missions pour l'application BSG (Base de Sécurité Générale) en analysant les données d'entrée et en générant des contenus personnalisés adaptés aux utilisateurs.\n\n## Contexte\n\nL'application BSG est un jeu de rôle interactif où les utilisateurs doivent accomplir des missions dans un environnement urbain. Les missions doivent être créées de manière dynamique selon les préférences de l'utilisateur et les contraintes de l'histoire.\n\n## Instructions principales\n\n### 1. Analyse des données d'entrée\n\n- Extraire les informations de l'utilisateur (nom, préférences, localisation)\n- Identifier les éléments clés pour la mission (type de rencontre, lieu, temps)\n- Comprendre le contexte de la mission (scénario de jeu de rôle)\n\n### 2. Création de la mission\n\n- Générer un titre court et captivant\n- Créer une description détaillée avec des éléments de narration\n- Définir le niveau de difficulté (Facile, Moyen, Difficile)\n- Spécifier les objectifs de la mission\n- Ajouter des indices pertinents\n\n### 3. Format de sortie\n\nRetourner les données dans le format JSON suivant :\n\n```json\n{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"titre\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"description\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"difficulté\": {\"type\": \"string\"},\n      \"objectifs\": {\"type\": \"string\"},\n      \"indices\": {\"type\": \"string\"}\n\t}\n}\n```\n\n## Contraintes\n\n- Utiliser un langage narratif captivant et immersif\n- Respecter le contexte de jeu de rôle de l'application BSG\n- Adapter le ton et le style aux préférences de l'utilisateur\n- Garantir la cohérence avec l'univers de l'application\n- Ne pas inclure d'informations sensibles ou personnelles\n\n## Exemple de mission\n\n```json\n{\n  \"titre\": \"Le Mystère du Café\",\n  \"description\": \"Trouvez l'indice caché dans le café de la place Bellecour pour découvrir le prochain lieu de la mission.\",\n  \"difficulte\": \"Facile\",\n  \"objectifs\": \"Identifier le lieu de la mission,Trouver l'indice caché,Résoudre l'énigme\",\n  \"indices\": \"L'indice est caché dans le café, derrière le bar.\"\n}\n```\n\n## Variables à utiliser\n\n- Nom de l'utilisateur : {{user.prenom}} {{user.nom}}\n- Préférences de rencontre : {{user.preferencesRencontre}}\n- Localisation : {{location}}\n- Type de mission : {{mission.type}}\n\n## Instructions spécifiques\n\n1. Si l'utilisateur a des préférences de rencontre spécifiques, intégrer ces préférences dans la mission\n2. Si la localisation est connue, créer des éléments liés à cet endroit\n3. Adapter le niveau de difficulté selon les préférences de l'utilisateur\n4. Créer une histoire cohérente avec le thème de l'application\n\n## Format de sortie requis\n\nRETOURNE UNIQUEMENT CE JSON SANS AUCUN TEXTE SUPPLÉMENTAIRE :\n{\"titre\": \"Titre de la mission\", \"description\": \"Description détaillée\", \"difficulte\": \"Facile|Moyen|Difficile\", \"objectifs\": \"objectif1,objectif2,objectif3\", \"indices\": \"Indices pertinents\"}\n\nNE RETOURNE JAMAIS QUE LE JSON, RIEN D'AUTRE. PAS DE MARKDOWN, PAS D'EXPLICATIONS, PAS DE TEXTES INTRODUCTIFS.\n"
+          "systemMessage": "=Créer automatiquement des missions pour l'application BSG (Base de Sécurité Générale) en analysant les données d'entrée et en générant des contenus personnalisés adaptés aux utilisateurs.\n\n## Contexte\n\nL'application BSG est un jeu de rôle interactif où les utilisateurs doivent accomplir des missions dans un environnement urbain. Les missions doivent être créées de manière dynamique selon les préférences de l'utilisateur et les contraintes de l'histoire.\n\n## Instructions principales\n\n### 1. Analyse des données d'entrée\n\n- Extraire les informations de l'utilisateur (nom, préférences, localisation)\n- Identifier les éléments clés pour la mission (type de rencontre, lieu, temps)\n- Comprendre le contexte de la mission (scénario de jeu de rôle)\n\n### 2. Création de la mission\n\n- Générer un titre court et captivant\n- Créer une description détaillée avec des éléments de narration\n- Définir le niveau de difficulté (Facile, Moyen, Difficile)\n- Spécifier les objectifs de la mission\n- Ajouter des indices pertinents\n\n### 3. Format de sortie\n\nRetourner les données dans le format JSON suivant :\n\n```json\n{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"titre\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"description\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"difficulté\": {\"type\": \"string\"},\n      \"objectifs\": {\"type\": \"string\"},\n      \"indices\": {\"type\": \"string\"},\n      \"user_id\": {\"type\": \"integer\"}\n\t}\n}\n```\n\n## Contraintes\n\n- Utiliser un langage narratif captivant et immersif\n- Respecter le contexte de jeu de rôle de l'application BSG\n- Adapter le ton et le style aux préférences de l'utilisateur\n- Garantir la cohérence avec l'univers de l'application\n- Ne pas inclure d'informations sensibles ou personnelles\n\n## Exemple de mission\n\n```json\n{\n  \"titre\": \"Le Mystère du Café\",\n  \"description\": \"Trouvez l'indice caché dans le café de la place Bellecour pour découvrir le prochain lieu de la mission.\",\n  \"difficulte\": \"Facile\",\n  \"objectifs\": \"Identifier le lieu de la mission,Trouver l'indice caché,Résoudre l'énigme\",\n  \"indices\": \"L'indice est caché dans le café, derrière le bar.\",\n  \"user_id\":  {{ $json.user.id }}\n}\n```\n\n## Variables à utiliser\n\n- Nom de l'utilisateur : {{user.prenom}} {{user.nom}}\n- Préférences de rencontre : {{user.preferencesRencontre}}\n- Localisation : {{location}}\n- Type de mission : {{mission.type}}\n- Identifiant de l'utilisateur : {{ $json.user.id }}\n\n## Instructions spécifiques\n\n1. Si l'utilisateur a des préférences de rencontre spécifiques, intégrer ces préférences dans la mission\n2. Si la localisation est connue, créer des éléments liés à cet endroit\n3. Adapter le niveau de difficulté selon les préférences de l'utilisateur\n4. Créer une histoire cohérente avec le thème de l'application\n\n## Format de sortie requis\n\nRETOURNE UNIQUEMENT CE JSON SANS AUCUN TEXTE SUPPLÉMENTAIRE :\n{\"titre\": \"Titre de la mission\", \"description\": \"Description détaillée\", \"difficulte\": \"Facile|Moyen|Difficile\", \"objectifs\": \"objectif1,objectif2,objectif3\", \"indices\": \"Indices pertinents\", \"user_id\": \"indentifiant du user\"}\n\nNE RETOURNE JAMAIS QUE LE JSON, RIEN D'AUTRE. PAS DE MARKDOWN, PAS D'EXPLICATIONS, PAS DE TEXTES INTRODUCTIFS.\nLE user_id QUE TU DOIS OBLIGATOIREMENT UTILISER EST LE : {{ $json.user.id }}\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -108,7 +108,10 @@
         176
       ],
       "id": "b61dda4c-e323-42af-a790-30ac3e47ab30",
-      "name": "AI Agent"
+      "name": "AI Agent",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -188,7 +191,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "dbb87737-1946-4f42-ac6e-7e8f377726c6",
+  "versionId": "8f962b5a-5f48-4b89-8c97-dd74b0dce944",
   "meta": {
     "instanceId": "c76f3b19be394cc3acfcc93e481a180706b7be970b6324ddb3a594da42f5fe04"
   },
