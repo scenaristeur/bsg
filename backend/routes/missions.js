@@ -64,29 +64,103 @@ router.post('/generate', async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' })
         }
 
-        // Créer une mission temporaire avec un identifiant de mission
-        const temporaryMission = {
-            titre: 'Mission en cours de génération...',
-            description: 'En attente de génération par l\'agent IA',
-            difficulte: 'En cours',
-            objectifs: 'Génération en cours',
-            indices: 'En attente'
+        // Appel à l'agent n8n pour générer la mission
+        // Utilisation de l'endpoint n8n générique
+        const n8nWebhookUrl = 'http://localhost:5678/webhook-test/cdac2c18-00f0-4020-b316-a695181d9b3f'
+
+        // Données à envoyer à n8n
+        const n8nPayload = {
+            user: {
+                id: user.id,
+                pseudo: user.pseudo,
+                prenom: user.prenom,
+                nom: user.nom,
+                email: user.email,
+                preferencesRencontre: user.preferencesRencontre
+            },
+            chatInput: `Génère une mission personnalisée pour l'utilisateur ${user.prenom} ${user.nom}. 
+            Les préférences de rencontre sont: ${JSON.stringify(preferences || user.preferencesRencontre || {})}.
+            La localisation est: ${JSON.stringify(location || {})}.
+            Crée une mission captivante dans le style de l'application BSG avec un titre, une description, un niveau de difficulté, des objectifs et des indices.`
         }
 
-        // Insérer la mission temporaire
-        const result = await db.run(
-            'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
-            [temporaryMission.titre, temporaryMission.description, temporaryMission.difficulte, temporaryMission.objectifs, temporaryMission.indices]
-        )
+        // Effectuer l'appel HTTP vers le webhook n8n
+        console.log('Appel à n8n avec les données:', n8nPayload);
+        try {
+            const n8nResponse = await fetch(n8nWebhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(n8nPayload)
+            })
 
-        // Récupérer l'ID de la mission créée
-        const missionId = result.lastID
+            console.log('Réponse n8n:', n8nResponse.status, n8nResponse.statusText);
 
-        // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
-        res.status(201).json({
-            missionId: missionId,
-            message: 'Mission créée, génération en cours via l\'agent n8n'
-        })
+            if (!n8nResponse.ok) {
+                const errorText = await n8nResponse.text();
+                console.error('Erreur n8n:', errorText);
+                throw new Error(`Erreur HTTP de n8n: ${n8nResponse.status} - ${n8nResponse.statusText} - ${errorText}`)
+            }
+
+            const n8nData = await n8nResponse.json()
+            console.log('Données reçues de n8n:', n8nData);
+
+            // Insérer la mission dans la table missions
+            const result = await db.run(
+                'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
+                [n8nData.titre, n8nData.description, n8nData.difficulte, n8nData.objectifs, n8nData.indices]
+            )
+
+            // Récupérer l'ID de la mission créée
+            const missionId = result.lastID
+
+            // Insérer l'assignation de la mission à l'utilisateur créateur
+            await db.run(
+                'INSERT INTO missions_assignees (mission_id, user_id, role, statut) VALUES (?, ?, ?, ?)',
+                [missionId, userId, 'createur', 'initie']
+            )
+
+            // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
+            res.status(201).json({
+                missionId: missionId,
+                message: 'Mission créée avec succès via l\'agent n8n',
+                n8nResult: n8nData
+            })
+        } catch (fetchError) {
+            console.error('Erreur lors de l\'appel à n8n:', fetchError);
+            // En cas d'erreur, on retourne une mission par défaut
+            // Insérer la mission par défaut
+            const defaultMission = {
+                titre: 'Mission de test - Générée par l\'agent n8n',
+                description: 'Mission créée automatiquement par l\'agent IA selon vos préférences.',
+                difficulte: 'Moyen',
+                objectifs: 'Compléter la mission, Trouver l\'indice, Interagir avec le partenaire',
+                indices: 'L\'indice se trouve dans le café de la place Bellecour'
+            };
+
+            const result = await db.run(
+                'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
+                [defaultMission.titre, defaultMission.description, defaultMission.difficulte, defaultMission.objectifs, defaultMission.indices]
+            )
+
+            // Récupérer l'ID de la mission créée
+            const missionId = result.lastID
+
+            // Insérer l'assignation de la mission à l'utilisateur créateur
+            await db.run(
+                'INSERT INTO missions_assignees (mission_id, user_id, role, statut) VALUES (?, ?, ?, ?)',
+                [missionId, userId, 'createur', 'initie']
+            )
+
+            // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
+            res.status(201).json({
+                missionId: missionId,
+                message: 'Mission créée, appel à n8n impossible (simulation)',
+                n8nResult: defaultMission
+            })
+        }
+
     } catch (error) {
         console.error('Erreur lors de la génération de la mission:', error)
         res.status(500).json({ error: 'Erreur serveur' })

@@ -56,6 +56,9 @@ export default {
                 if (response.ok) {
                     missionStatus.value = 'Mission en cours de génération via l\'agent n8n...'
 
+                    // Afficher l'ID de la mission temporaire
+                    console.log('Mission ID temporaire:', data.missionId)
+
                     // Attente de quelques secondes pour simuler le temps de génération
                     setTimeout(() => {
                         missionStatus.value = 'Mission générée avec succès !'

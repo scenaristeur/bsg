@@ -96,6 +96,20 @@ export async function initDB() {
     )
     `)
 
+    // Table pour les assignations de missions (liaison utilisateur/mission)
+    await dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS missions_assignees (
+    id          INTEGER     PRIMARY KEY AUTOINCREMENT,
+    mission_id  INTEGER     NOT NULL,
+    user_id     INTEGER     NOT NULL,
+    role        TEXT        NOT NULL, -- 'createur', 'invite', 'participant'
+    statut      TEXT        NOT NULL DEFAULT 'initie', -- 'initie', 'annulee', 'en_pause', 'reussie', 'echouee'
+    createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (mission_id) REFERENCES missions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+    `)
+
     // Insertion des utilisateurs fictifs s'ils n'existent pas déjà
     await insertDefaultUsers()
 

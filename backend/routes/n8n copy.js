@@ -204,112 +204,113 @@ router.post('/webhook-result', async (req, res) => {
     try {
         // Le workflow n8n envoie les données sous forme de tableau avec un objet contenant "text"
         const data = req.body;
-        let user, chatInput;
+        console.log(req.body)
+        // let user, chatInput;
 
-        // Si c'est un tableau avec un objet contenant "text"
-        if (Array.isArray(data) && data.length > 0 && data[0].hasOwnProperty('text')) {
-            chatInput = data[0].text;
-            // Pour l'exemple, on crée un utilisateur de base
-            user = {
-                id: "test-user-123",
-                pseudo: "UtilisateurTest",
-                prenom: "Test",
-                nom: "Utilisateur",
-                email: "test@example.com"
-            };
-        } else {
-            // Sinon, on utilise les champs traditionnels
-            // Si c'est directement un objet avec text
-            if (data.hasOwnProperty('text')) {
-                chatInput = data.text;
-                user = {
-                    id: "test-user-123",
-                    pseudo: "UtilisateurTest",
-                    prenom: "Test",
-                    nom: "Utilisateur",
-                    email: "test@example.com"
-                };
-            } else {
-                user = data.user;
-                chatInput = data.chatInput;
-            }
-        }
+        // // Si c'est un tableau avec un objet contenant "text"
+        // if (Array.isArray(data) && data.length > 0 && data[0].hasOwnProperty('text')) {
+        //     chatInput = data[0].text;
+        //     // Pour l'exemple, on crée un utilisateur de base
+        //     user = {
+        //         id: "test-user-123",
+        //         pseudo: "UtilisateurTest",
+        //         prenom: "Test",
+        //         nom: "Utilisateur",
+        //         email: "test@example.com"
+        //     };
+        // } else {
+        //     // Sinon, on utilise les champs traditionnels
+        //     // Si c'est directement un objet avec text
+        //     if (data.hasOwnProperty('text')) {
+        //         chatInput = data.text;
+        //         user = {
+        //             id: "test-user-123",
+        //             pseudo: "UtilisateurTest",
+        //             prenom: "Test",
+        //             nom: "Utilisateur",
+        //             email: "test@example.com"
+        //         };
+        //     } else {
+        //         user = data.user;
+        //         chatInput = data.chatInput;
+        //     }
+        // }
 
-        // Validation des données requises
-        if (!user || !chatInput) {
-            return res.status(400).json({
-                error: 'Données incomplètes : user et chatInput sont requis'
-            })
-        }
+        // // Validation des données requises
+        // if (!user || !chatInput) {
+        //     return res.status(400).json({
+        //         error: 'Données incomplètes : user et chatInput sont requis'
+        //     })
+        // }
 
-        // Ici, vous pouvez ajouter la logique pour traiter les résultats du webhook
-        // Par exemple, stocker les résultats dans la base de données ou les transmettre au frontend
+        // // Ici, vous pouvez ajouter la logique pour traiter les résultats du webhook
+        // // Par exemple, stocker les résultats dans la base de données ou les transmettre au frontend
 
-        console.log('Résultats reçus du webhook n8n (webhook-result):', { user, chatInput })
+        // console.log('Résultats reçus du webhook n8n (webhook-result):', { user, chatInput })
 
-        // Exemple de traitement : stocker dans la base de données missions au lieu de evenements
-        const db = await getDB()
+        // // Exemple de traitement : stocker dans la base de données missions au lieu de evenements
+        // const db = await getDB()
 
-        // Extraire les données de la mission depuis chatInput (qui devrait contenir le JSON)
-        let missionData;
-        try {
-            // Si chatInput est une chaîne JSON, on la parse
-            if (typeof chatInput === 'string') {
-                // Essayer de parser directement comme JSON
-                missionData = JSON.parse(chatInput);
-            } else {
-                // Sinon, on suppose que c'est déjà un objet
-                missionData = chatInput;
-            }
-        } catch (parseError) {
-            console.error('Erreur de parsing JSON direct:', parseError);
-            // Si le parsing direct échoue, essayer d'extraire le JSON du texte
-            try {
-                // Extraire le JSON du format markdown ```json ... ```
-                const jsonMatch = chatInput.match(/```json\s*([\s\S]*?)\s*```/);
-                if (jsonMatch && jsonMatch[1]) {
-                    missionData = JSON.parse(jsonMatch[1]);
-                } else {
-                    // Si on ne trouve pas de JSON formaté, on extrait les parties importantes
-                    const titreMatch = chatInput.match(/Titre\s*:\s*\*\*"(.*?)"\*\*/);
-                    const descriptionMatch = chatInput.match(/Description\s*:\s*"([^"]*)"/);
-                    const difficulteMatch = chatInput.match(/Niveau de difficulté\s*:\s*\*\*(.*?)\*\*/);
-                    const objectifsMatch = chatInput.match(/Objectifs\s*:\s*(.*?)(?:\n\n|\n$)/s);
-                    const indicesMatch = chatInput.match(/Indices\s*:\s*(.*?)(?:\n\n|\n$)/s);
+        // // Extraire les données de la mission depuis chatInput (qui devrait contenir le JSON)
+        // let missionData;
+        // try {
+        //     // Si chatInput est une chaîne JSON, on la parse
+        //     if (typeof chatInput === 'string') {
+        //         // Essayer de parser directement comme JSON
+        //         missionData = JSON.parse(chatInput);
+        //     } else {
+        //         // Sinon, on suppose que c'est déjà un objet
+        //         missionData = chatInput;
+        //     }
+        // } catch (parseError) {
+        //     console.error('Erreur de parsing JSON direct:', parseError);
+        //     // Si le parsing direct échoue, essayer d'extraire le JSON du texte
+        //     try {
+        //         // Extraire le JSON du format markdown ```json ... ```
+        //         const jsonMatch = chatInput.match(/```json\s*([\s\S]*?)\s*```/);
+        //         if (jsonMatch && jsonMatch[1]) {
+        //             missionData = JSON.parse(jsonMatch[1]);
+        //         } else {
+        //             // Si on ne trouve pas de JSON formaté, on extrait les parties importantes
+        //             const titreMatch = chatInput.match(/Titre\s*:\s*\*\*"(.*?)"\*\*/);
+        //             const descriptionMatch = chatInput.match(/Description\s*:\s*"([^"]*)"/);
+        //             const difficulteMatch = chatInput.match(/Niveau de difficulté\s*:\s*\*\*(.*?)\*\*/);
+        //             const objectifsMatch = chatInput.match(/Objectifs\s*:\s*(.*?)(?:\n\n|\n$)/s);
+        //             const indicesMatch = chatInput.match(/Indices\s*:\s*(.*?)(?:\n\n|\n$)/s);
 
-                    missionData = {
-                        titre: titreMatch ? titreMatch[1] : 'Mission générée via IA',
-                        description: descriptionMatch ? descriptionMatch[1] : chatInput,
-                        difficulte: difficulteMatch ? difficulteMatch[1] : 'Moyen',
-                        objectifs: objectifsMatch ? objectifsMatch[1].split('* ').filter(o => o.trim()).join(', ') : 'Objectif 1, Objectif 2, Objectif 3',
-                        indices: indicesMatch ? indicesMatch[1].split('* ').filter(i => i.trim()).join('. ') : 'Indice 1'
-                    };
-                }
-            } catch (extractError) {
-                console.error('Erreur d\'extraction des données:', extractError);
-                // Si tout échoue, on utilise les données brutes
-                missionData = {
-                    titre: 'Mission générée via IA',
-                    description: chatInput,
-                    difficulte: 'Moyen',
-                    objectifs: 'Objectif 1, Objectif 2, Objectif 3',
-                    indices: 'Indice 1'
-                };
-            }
-        }
+        //             missionData = {
+        //                 titre: titreMatch ? titreMatch[1] : 'Mission générée via IA',
+        //                 description: descriptionMatch ? descriptionMatch[1] : chatInput,
+        //                 difficulte: difficulteMatch ? difficulteMatch[1] : 'Moyen',
+        //                 objectifs: objectifsMatch ? objectifsMatch[1].split('* ').filter(o => o.trim()).join(', ') : 'Objectif 1, Objectif 2, Objectif 3',
+        //                 indices: indicesMatch ? indicesMatch[1].split('* ').filter(i => i.trim()).join('. ') : 'Indice 1'
+        //             };
+        //         }
+        //     } catch (extractError) {
+        //         console.error('Erreur d\'extraction des données:', extractError);
+        //         // Si tout échoue, on utilise les données brutes
+        //         missionData = {
+        //             titre: 'Mission générée via IA',
+        //             description: chatInput,
+        //             difficulte: 'Moyen',
+        //             objectifs: 'Objectif 1, Objectif 2, Objectif 3',
+        //             indices: 'Indice 1'
+        //         };
+        //     }
+        // }
 
-        // Insérer la mission dans la table missions
-        await db.run(
-            'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
-            [missionData.titre, missionData.description, missionData.difficulte, missionData.objectifs, missionData.indices]
-        )
+        // // Insérer la mission dans la table missions
+        // await db.run(
+        //     'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
+        //     [missionData.titre, missionData.description, missionData.difficulte, missionData.objectifs, missionData.indices]
+        // )
 
-        // Retourner une réponse de succès
-        res.json({
-            success: true,
-            message: 'Mission créée avec succès à partir des résultats du webhook',
-            user: user.id
-        })
+        // // Retourner une réponse de succès
+        // res.json({
+        //     success: true,
+        //     message: 'Mission créée avec succès à partir des résultats du webhook',
+        //     user: user.id
+        // })
 
     } catch (error) {
         console.error('Erreur dans le webhook-result n8n:', error)
