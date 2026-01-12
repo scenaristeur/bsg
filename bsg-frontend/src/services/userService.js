@@ -1,107 +1,40 @@
-import axios from 'axios'
+// Service pour gérer les opérations liées aux utilisateurs
+import { api } from '../utils/api'
 
-// Configuration de l'URL de base pour l'API backend
-const API_BASE_URL = 'http://localhost:3000'
-
-// Création d'une instance axios avec la configuration de base
-const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json'
-    }
-})
-
-/**
- * Service pour gérer les utilisateurs
- */
 export const userService = {
-    /**
-     * Récupère tous les utilisateurs
-     * @returns {Promise<Array>} Liste des utilisateurs
-     */
-    async getUsers() {
-        try {
-            const response = await apiClient.get('/api/users')
-            return response.data
-        } catch (error) {
-            throw new Error('Erreur lors de la récupération des utilisateurs')
-        }
-    },
-
-    /**
-     * Crée un nouvel utilisateur
-     * @param {Object} userData - Données de l'utilisateur à créer
-     * @returns {Promise<Object>} Utilisateur créé
-     */
-    async createUser(userData) {
-        try {
-            console.log('Appel API POST vers:', '/api/users');
-            console.log('Données envoyées:', userData);
-            const response = await apiClient.post('/api/users', userData)
-            console.log('Réponse du serveur:', response.data);
-            return response.data
-        } catch (error) {
-            console.error('Erreur complète de la requête:', error);
-            if (error.response) {
-                throw new Error(error.response.data.error || 'Erreur lors de la création de l\'utilisateur')
-            } else {
-                throw new Error('Erreur de connexion au serveur')
-            }
-        }
-    },
-
-    /**
-     * Met à jour un utilisateur
-     * @param {number} userId - ID de l'utilisateur à mettre à jour
-     * @param {Object} userData - Données de l'utilisateur à mettre à jour
-     * @returns {Promise<Object>} Utilisateur mis à jour
-     */
-    async updateUser(userId, userData) {
-        try {
-            console.log('Appel API PUT vers:', `/api/users/${userId}`);
-            console.log('Données envoyées:', userData);
-            const response = await apiClient.put(`/api/users/${userId}`, userData)
-            console.log('Réponse du serveur:', response.data);
-            return response.data
-        } catch (error) {
-            console.error('Erreur complète de la requête:', error);
-            if (error.response) {
-                throw new Error(error.response.data.error || 'Erreur lors de la mise à jour de l\'utilisateur')
-            } else {
-                throw new Error('Erreur de connexion au serveur')
-            }
-        }
-    },
-
-    /**
-     * Supprime un utilisateur
-     * @param {number} userId - ID de l'utilisateur à supprimer
-     * @returns {Promise<Object>} Résultat de la suppression
-     */
-    async deleteUser(userId) {
-        try {
-            const response = await apiClient.delete('/api/users', { data: { id: userId } })
-            return response.data
-        } catch (error) {
-            throw new Error('Erreur lors de la suppression de l\'utilisateur')
-        }
-    },
-
-    /**
-     * Connecte un utilisateur
-     * @param {Object} credentials - Identifiants de connexion
-     * @returns {Promise<Object>} Utilisateur connecté
-     */
+    // Connexion d'un utilisateur
     async loginUser(credentials) {
-        try {
-            const response = await apiClient.post('/login', credentials)
-            return response.data
-        } catch (error) {
-            if (error.response) {
-                throw new Error(error.response.data.error || 'Erreur lors de la connexion')
-            } else {
-                throw new Error('Erreur de connexion au serveur')
-            }
-        }
+        const response = await api.loginUser(credentials)
+        return response
+    },
+
+    // Inscription d'un nouvel utilisateur
+    async createUser(userData) {
+        const response = await api.createUser(userData)
+        return response
+    },
+
+    // Récupération de tous les utilisateurs
+    async getAllUsers() {
+        const response = await api.getUsers()
+        return response
+    },
+
+    // Récupération d'un utilisateur spécifique
+    async getUserById(id) {
+        const response = await api.getUser(id)
+        return response
+    },
+
+    // Mise à jour d'un utilisateur
+    async updateUser(id, userData) {
+        const response = await api.updateUser(id, userData)
+        return response
+    },
+
+    // Suppression d'un utilisateur
+    async deleteUser(id) {
+        const response = await api.deleteUser(id)
+        return response
     }
 }

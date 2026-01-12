@@ -1,75 +1,72 @@
 <template>
-    <div class="signup-container">
+    <div class="sign-up-container">
         <h2>Inscription</h2>
-        <form @submit.prevent="handleSignUp" class="signup-form">
+        <form @submit.prevent="handleSignUp" class="sign-up-form">
             <div class="form-group">
-                <label for="firstName">Prénom :</label>
-                <input id="firstName" v-model="formData.firstName" type="text" required />
+                <label for="firstName">Prénom:</label>
+                <input id="firstName" v-model="formData.firstName" type="text" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="lastName">Nom :</label>
-                <input id="lastName" v-model="formData.lastName" type="text" required />
+                <label for="lastName">Nom:</label>
+                <input id="lastName" v-model="formData.lastName" type="text" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="username">Pseudo :</label>
-                <input id="username" v-model="formData.username" type="text" required />
+                <label for="pseudo">Pseudo:</label>
+                <input id="pseudo" v-model="formData.pseudo" type="text" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="email">Email :</label>
-                <input id="email" v-model="formData.email" type="email" required />
+                <label for="email">Email:</label>
+                <input id="email" v-model="formData.email" type="email" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="password">Mot de passe :</label>
-                <input id="password" v-model="formData.password" type="password" required />
+                <label for="password">Mot de passe:</label>
+                <input id="password" v-model="formData.password" type="password" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="dateOfBirth">Date de naissance :</label>
-                <input id="dateOfBirth" v-model="formData.dateOfBirth" type="date" />
+                <label for="dateOfBirth">Date de naissance:</label>
+                <input id="dateOfBirth" v-model="formData.dateOfBirth" type="date" class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="interests">Centres d'intérêt :</label>
-                <textarea id="interests" v-model="formData.interests" placeholder="Séparés par des virgules"></textarea>
+                <label for="interests">Intérêts:</label>
+                <textarea id="interests" v-model="formData.interests" class="form-textarea"></textarea>
             </div>
 
             <div class="form-group">
-                <label for="meetingPreference">Préférences de rencontre :</label>
-                <select id="meetingPreference" v-model="formData.meetingPreference">
-                    <option value="transport">Transport en commun</option>
-                    <option value="lieu">Lieu public</option>
+                <label for="preferences">Préférences de rencontre:</label>
+                <select id="preferences" v-model="formData.preferences" class="form-select">
+                    <option value="transport">Transport</option>
+                    <option value="lieu">Lieu</option>
                     <option value="restaurant">Restaurant</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="availability">Disponibilité :</label>
-                <input id="availability" v-model="formData.availability" type="text"
-                    placeholder="Ex: Soirées, Week-ends" />
+                <label for="availability">Disponibilité:</label>
+                <input id="availability" v-model="formData.availability" type="text" class="form-input" />
             </div>
 
-            <button type="submit" :disabled="loading">
-                {{ loading ? 'Inscription en cours...' : 'S\'inscrire' }}
-            </button>
-
-            <div v-if="error" class="error-message">
-                {{ error }}
-            </div>
-
-            <div v-if="success" class="success-message">
-                {{ success }}
-            </div>
+            <button type="submit" class="submit-btn">S'inscrire</button>
         </form>
+
+        <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+
+        <div v-if="successMessage" class="success-message">
+            {{ successMessage }}
+        </div>
     </div>
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
 import { userService } from '../services/userService'
-import { useUserStore } from '../stores/user'
 
 export default {
     name: 'SignUp',
@@ -78,74 +75,55 @@ export default {
             formData: {
                 firstName: '',
                 lastName: '',
-                username: '',
+                pseudo: '',
                 email: '',
-                password: ''
+                password: '',
+                dateOfBirth: '',
+                interests: '',
+                preferences: 'transport',
+                availability: ''
             },
-            loading: false,
-            error: null,
-            success: null
+            errorMessage: '',
+            successMessage: ''
         }
     },
     methods: {
         async handleSignUp() {
-            this.loading = true
-            this.error = null
-            this.success = null
-
             try {
-                // Validation basique des données
-                if (!this.formData.firstName || !this.formData.lastName ||
-                    !this.formData.username || !this.formData.email ||
-                    !this.formData.password) {
-                    throw new Error('Tous les champs sont requis')
+                // Validation basique
+                if (!this.formData.email || !this.formData.password || !this.formData.firstName || !this.formData.lastName) {
+                    this.errorMessage = 'Veuillez remplir tous les champs obligatoires.'
+                    return
                 }
 
-                // Utilisation du store utilisateur
-                const userStore = useUserStore()
-
-                // Appel au service pour créer l'utilisateur
-                const userData = {
+                // Appel API pour créer l'utilisateur
+                const response = await userService.createUser({
                     nom: this.formData.lastName,
                     prenom: this.formData.firstName,
-                    pseudo: this.formData.username,
+                    pseudo: this.formData.pseudo,
                     email: this.formData.email,
                     password: this.formData.password,
-                    dateNaissance: this.formData.dateOfBirth || null,
-                    interets: this.formData.interests || '',
-                    preferencesRencontre: this.formData.meetingPreference || 'transport',
-                    disponibilite: this.formData.availability || ''
-                }
+                    dateNaissance: this.formData.dateOfBirth,
+                    interets: this.formData.interests,
+                    preferencesRencontre: this.formData.preferences,
+                    disponibilite: this.formData.availability
+                })
 
-                const result = await userStore.register(userData)
+                this.successMessage = 'Inscription réussie ! Vous pouvez maintenant vous connecter.'
+                this.errorMessage = ''
 
-                if (result.success) {
-                    // Afficher un message de succès
-                    this.success = 'Inscription réussie ! Vous pouvez maintenant vous connecter.'
+                // Redirection vers la page de login après un court délai
+                setTimeout(() => {
+                    this.$router.push('/login')
+                }, 2000)
 
-                    // Réinitialiser le formulaire après un court délai
-                    setTimeout(() => {
-                        this.resetForm()
-                        // Rediriger vers la page de connexion après inscription réussie
-                        this.$router.push('/login')
-                    }, 2000)
+            } catch (error) {
+                console.error('Erreur lors de l\'inscription:', error)
+                if (error.message) {
+                    this.errorMessage = error.message || 'Erreur lors de l\'inscription'
                 } else {
-                    this.error = result.error
+                    this.errorMessage = 'Erreur réseau lors de l\'inscription'
                 }
-
-            } catch (err) {
-                this.error = err.message || 'Une erreur est survenue lors de l\'inscription'
-            } finally {
-                this.loading = false
-            }
-        },
-        resetForm() {
-            this.formData = {
-                firstName: '',
-                lastName: '',
-                username: '',
-                email: '',
-                password: ''
             }
         }
     }
@@ -153,79 +131,73 @@ export default {
 </script>
 
 <style scoped>
-.signup-container {
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
-    border: 1px solid #ddd;
+.sign-up-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.sign-up-form {
+    background-color: #f9f9f9;
+    padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 1.5rem;
+.form-group {
+    margin-bottom: 15px;
 }
 
-.signup-form .form-group {
-    margin-bottom: 1rem;
-}
-
-.signup-form label {
+.form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 5px;
     font-weight: bold;
-    color: #555;
 }
 
-.signup-form input {
+.form-input,
+.form-textarea,
+.form-select {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
+    padding: 8px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 1rem;
     box-sizing: border-box;
 }
 
-.signup-form button {
+.form-textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.submit-btn {
     width: 100%;
-    padding: 0.75rem;
+    padding: 10px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 16px;
 }
 
-.signup-form button:hover:not(:disabled) {
+.submit-btn:hover {
     background-color: #0056b3;
 }
 
-.signup-form button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
 .error-message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    color: red;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #ffebee;
     border-radius: 4px;
-    text-align: center;
 }
 
 .success-message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    color: green;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #e8f5e9;
     border-radius: 4px;
-    text-align: center;
 }
 </style>

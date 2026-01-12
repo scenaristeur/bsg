@@ -1,37 +1,32 @@
 <template>
     <div class="login-container">
         <h2>Connexion</h2>
-        <form @submit.prevent="handleLogin" class="login-form">
+        <form class="login-form">
             <div class="form-group">
-                <label for="loginEmail">Email :</label>
-                <input id="loginEmail" v-model="formData.email" type="email" required />
+                <label for="loginEmail">Email:</label>
+                <input id="loginEmail" v-model="loginForm.email" type="email" required class="form-input" />
             </div>
 
             <div class="form-group">
-                <label for="loginPassword">Mot de passe :</label>
-                <input id="loginPassword" v-model="formData.password" type="password" required />
+                <label for="loginPassword">Mot de passe:</label>
+                <input id="loginPassword" v-model="loginForm.password" type="password" required class="form-input" />
             </div>
 
-            <button type="submit" :disabled="loading">
-                {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
-            </button>
-
-            <div v-if="error" class="error-message">
-                {{ error }}
-            </div>
-
-            <div v-if="success" class="success-message">
-                {{ success }}
-            </div>
+            <button type="button" @click="handleLogin" class="submit-btn">Se connecter</button>
         </form>
 
-        <p class="signup-link">
-            Pas encore de compte ? <router-link to="/signup">S'inscrire</router-link>
-        </p>
+        <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+
+        <div class="signup-link">
+            <p>Vous n'avez pas de compte ? <router-link to="/signup">Inscrivez-vous ici</router-link></p>
+        </div>
     </div>
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
 import { userService } from '../services/userService'
 import { useUserStore } from '../stores/user'
 
@@ -39,54 +34,48 @@ export default {
     name: 'Login',
     data() {
         return {
-            formData: {
+            loginForm: {
                 email: '',
                 password: ''
             },
-            loading: false,
-            error: null,
-            success: null
+            errorMessage: ''
         }
     },
     methods: {
         async handleLogin() {
-            this.loading = true
-            this.error = null
-            this.success = null
-
+            console.log('Tentative de connexion avec:', this.loginForm)
             try {
-                // Validation basique des données
-                if (!this.formData.email || !this.formData.password) {
-                    throw new Error('Email et mot de passe sont requis')
+                // Validation basique
+                if (!this.loginForm.email || !this.loginForm.password) {
+                    this.errorMessage = 'Veuillez remplir tous les champs.'
+                    return
                 }
+
+                // Appel au service utilisateur pour la connexion
+                console.log('Appel au service utilisateur pour la connexion...')
+                const response = await userService.loginUser({
+                    email: this.loginForm.email,
+                    password: this.loginForm.password
+                })
+                console.log('Réponse du service utilisateur:', response)
 
                 // Utilisation du store utilisateur
                 const userStore = useUserStore()
+                userStore.setCurrentUser(response.user)
 
-                // Appel au service pour connecter l'utilisateur
-                const credentials = {
-                    email: this.formData.email,
-                    password: this.formData.password
-                }
+                this.errorMessage = ''
 
-                const result = await userStore.login(credentials.email, credentials.password)
+                // Redirection vers la page de jeu
+                this.$router.push('/game')
 
-                if (result.success) {
-                    // Afficher un message de succès
-                    this.success = 'Connexion réussie ! Redirection...'
-
-                    // Rediriger vers la page de jeu après connexion réussie
-                    setTimeout(() => {
-                        this.$router.push('/game')
-                    }, 1500)
+            } catch (error) {
+                console.error('Erreur lors de la connexion:', error)
+                console.error('Erreur détaillée:', error.message, error.response)
+                if (error.message) {
+                    this.errorMessage = error.message || 'Erreur lors de la connexion'
                 } else {
-                    this.error = result.error
+                    this.errorMessage = 'Erreur réseau lors de la connexion'
                 }
-
-            } catch (err) {
-                this.error = err.message || 'Erreur lors de la connexion'
-            } finally {
-                this.loading = false
             }
         }
     }
@@ -96,82 +85,61 @@ export default {
 <style scoped>
 .login-container {
     max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
-    border: 1px solid #ddd;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.login-form {
+    background-color: #f9f9f9;
+    padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 1.5rem;
+.form-group {
+    margin-bottom: 15px;
 }
 
-.login-form .form-group {
-    margin-bottom: 1rem;
-}
-
-.login-form label {
+.form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 5px;
     font-weight: bold;
-    color: #555;
 }
 
-.login-form input {
+.form-input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
+    padding: 8px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 1rem;
     box-sizing: border-box;
 }
 
-.login-form button {
+.submit-btn {
     width: 100%;
-    padding: 0.75rem;
+    padding: 10px;
     background-color: #28a745;
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 16px;
 }
 
-.login-form button:hover:not(:disabled) {
+.submit-btn:hover {
     background-color: #218838;
 }
 
-.login-form button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
 .error-message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    color: red;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #ffebee;
     border-radius: 4px;
-    text-align: center;
-}
-
-.success-message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    border-radius: 4px;
-    text-align: center;
 }
 
 .signup-link {
-    margin-top: 1rem;
+    margin-top: 15px;
     text-align: center;
 }
 
