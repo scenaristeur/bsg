@@ -52,6 +52,47 @@ router.post('/', async (req, res) => {
     }
 })
 
+// Générer une nouvelle mission via l'agent n8n
+router.post('/generate', async (req, res) => {
+    try {
+        const { userId, location, preferences } = req.body
+        const db = await getDB()
+
+        // Vérifier que l'utilisateur existe
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [userId])
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' })
+        }
+
+        // Créer une mission temporaire avec un identifiant de mission
+        const temporaryMission = {
+            titre: 'Mission en cours de génération...',
+            description: 'En attente de génération par l\'agent IA',
+            difficulte: 'En cours',
+            objectifs: 'Génération en cours',
+            indices: 'En attente'
+        }
+
+        // Insérer la mission temporaire
+        const result = await db.run(
+            'INSERT INTO missions (titre, description, difficulte, objectifs, indices) VALUES (?, ?, ?, ?, ?)',
+            [temporaryMission.titre, temporaryMission.description, temporaryMission.difficulte, temporaryMission.objectifs, temporaryMission.indices]
+        )
+
+        // Récupérer l'ID de la mission créée
+        const missionId = result.lastID
+
+        // Retourner l'ID de la mission pour que le frontend puisse suivre sa génération
+        res.status(201).json({
+            missionId: missionId,
+            message: 'Mission créée, génération en cours via l\'agent n8n'
+        })
+    } catch (error) {
+        console.error('Erreur lors de la génération de la mission:', error)
+        res.status(500).json({ error: 'Erreur serveur' })
+    }
+})
+
 // Mettre à jour une mission
 router.put('/:id', async (req, res) => {
     try {

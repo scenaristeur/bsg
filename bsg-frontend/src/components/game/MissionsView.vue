@@ -1,6 +1,10 @@
 <template>
     <div class="missions-view">
         <h2>Mes Missions</h2>
+
+        <!-- Bouton pour générer une nouvelle mission -->
+        <GenerateMissionButton />
+
         <div class="mission-card" v-if="currentMission">
             <div class="mission-header">
                 <h3>{{ currentMission.titre }}</h3>
@@ -30,8 +34,13 @@
 </template>
 
 <script>
+import GenerateMissionButton from '../GenerateMissionButton.vue'
+
 export default {
     name: 'MissionsView',
+    components: {
+        GenerateMissionButton
+    },
     data() {
         return {
             currentMission: {

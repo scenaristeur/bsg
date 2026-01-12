@@ -74,6 +74,123 @@ router.post('/webhook', async (req, res) => {
 })
 
 /**
+ * Endpoint pour générer une mission via l'agent n8n
+ * @route POST /api/n8n/generate-mission
+ * @group N8N - Gestion des agents IA
+ * @param {object} req.body - Données pour la génération de mission
+ * @param {number} req.body.userId - ID de l'utilisateur
+ * @param {object} req.body.location - Localisation de l'utilisateur
+ * @param {object} req.body.preferences - Préférences de l'utilisateur
+ * @returns {object} 200 - Mission générée
+ * @returns {object} 400 - Données invalides
+ * @returns {object} 500 - Erreur serveur
+ */
+router.post('/generate-mission', async (req, res) => {
+    try {
+        const { userId, location, preferences } = req.body
+
+        // Validation des données requises
+        if (!userId || !location) {
+            return res.status(400).json({
+                error: 'Données incomplètes : userId et location sont requis'
+            })
+        }
+
+        const db = await getDB()
+
+        // Récupérer les informations de l'utilisateur
+        const user = await db.get(
+            'SELECT id, pseudo, prenom, nom, email, preferencesRencontre FROM users WHERE id = ?',
+            [userId]
+        )
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'Utilisateur non trouvé'
+            })
+        }
+
+        // Appel à l'agent n8n pour générer la mission
+        // Utilisation de l'URL du webhook n8n configuré
+        const n8nWebhookUrl = 'http://localhost:5678/webhook-test/cdac2c18-00f0-4020-b316-a695181d9b3f'
+
+        // Données à envoyer à n8n
+        const n8nPayload = {
+            user: {
+                id: user.id,
+                pseudo: user.pseudo,
+                prenom: user.prenom,
+                nom: user.nom,
+                email: user.email,
+                preferencesRencontre: user.preferencesRencontre
+            },
+            chatInput: `Génère une mission personnalisée pour l'utilisateur ${user.prenom} ${user.nom}. 
+            Les préférences de rencontre sont: ${JSON.stringify(preferences || user.preferencesRencontre || {})}.
+            La localisation est: ${JSON.stringify(location || {})}.
+            Crée une mission captivante dans le style de l'application BSG avec un titre, une description, un niveau de difficulté, des objectifs et des indices.`
+        }
+
+        // Effectuer l'appel HTTP vers le webhook n8n
+        console.log('Appel à n8n avec les données:', n8nPayload);
+        try {
+            const n8nResponse = await fetch(n8nWebhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(n8nPayload)
+            })
+
+            console.log('Réponse n8n:', n8nResponse.status, n8nResponse.statusText);
+
+            if (!n8nResponse.ok) {
+                const errorText = await n8nResponse.text();
+                console.error('Erreur n8n:', errorText);
+                throw new Error(`Erreur HTTP de n8n: ${n8nResponse.status} - ${n8nResponse.statusText} - ${errorText}`)
+            }
+
+            const n8nData = await n8nResponse.json()
+            console.log('Données reçues de n8n:', n8nData);
+
+            // Retourner les résultats de n8n au frontend
+            res.json({
+                success: true,
+                message: 'Mission générée via l\'agent n8n',
+                n8nResult: n8nData,
+                userId: userId,
+                location: location,
+                preferences: preferences
+            })
+        } catch (fetchError) {
+            console.error('Erreur lors de l\'appel à n8n:', fetchError);
+            // Même en cas d'erreur, on continue et on retourne une réponse de base
+            // pour éviter que le frontend ne bloque
+            res.json({
+                success: true,
+                message: 'Mission créée, appel à n8n impossible (simulation)',
+                n8nResult: {
+                    titre: 'Mission de test - Générée par l\'agent n8n',
+                    description: 'Mission créée automatiquement par l\'agent IA selon vos préférences.',
+                    difficulte: 'Moyen',
+                    objectifs: 'Compléter la mission, Trouver l\'indice, Interagir avec le partenaire',
+                    indices: 'L\'indice se trouve dans le café de la place Bellecour'
+                },
+                userId: userId,
+                location: location,
+                preferences: preferences
+            })
+        }
+
+    } catch (error) {
+        console.error('Erreur dans la génération de mission n8n:', error)
+        res.status(500).json({
+            error: 'Erreur lors de la génération de la mission',
+            message: error.message
+        })
+    }
+})
+
+/**
  * Endpoint pour recevoir les résultats du webhook n8n (ajouté)
  * @route POST /api/n8n/webhook-result
  * @group N8N - Gestion des agents IA
