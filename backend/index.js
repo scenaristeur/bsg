@@ -14,7 +14,7 @@ const app = express()
 app.use(bodyParser.json())
 app.use(express.static("public"))
 app.use(cors({
-    'origin': ['http://localhost:5173', 'http://localhost:3000'],
+    'origin': ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5678'],
     'allowedHeaders': ['sessionId', 'Content-Type', 'Authorization', 'authorization'],
     'exposedHeaders': ['sessionId'],
     'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',

@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        80,
-        0
+        848,
+        336
       ],
-      "id": "7f97b88e-0c0d-484d-8c83-c75bd055e07a",
+      "id": "df234bfc-505e-4571-9634-1d8f8f37b623",
       "name": "Webhook",
       "webhookId": "cdac2c18-00f0-4020-b316-a695181d9b3f"
     },
@@ -31,10 +31,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        640,
-        272
+        1408,
+        608
       ],
-      "id": "a069a74d-9391-42ab-ba4f-aa3908b50c39",
+      "id": "e6e4f47d-1b80-481f-a976-ed7945c6d5d5",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
@@ -60,10 +60,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        288,
-        0
+        1056,
+        336
       ],
-      "id": "739a546d-b0d8-492e-ac34-e51d9e51fd56",
+      "id": "428f8c0f-a46e-4035-8bd9-6121232af9e7",
       "name": "Edit Fields"
     },
     {
@@ -73,10 +73,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        624,
-        32
+        1392,
+        368
       ],
-      "id": "7ce04914-3914-4b40-afe4-c2fa14978e42",
+      "id": "64d156e3-dd0c-4f9e-94c1-ed27ceb83851",
       "name": "Basic LLM Chain"
     },
     {
@@ -86,12 +86,35 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        224,
-        176
+        992,
+        512
       ],
-      "id": "03e2a35d-ee1c-4fce-9537-c8efdfb6bd9d",
+      "id": "8fec98e4-8757-4ae6-aaad-b652e147ffef",
       "name": "When chat message received",
       "webhookId": "adb1c7f9-f6b0-4797-9e7d-9abe79bef4cd"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://192.168.1.107:3000/api/n8n/webhook-result",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "=text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        352
+      ],
+      "id": "35ec1753-8d00-4418-b303-0bf7bb8d98e4",
+      "name": "Send Result to Backend"
     }
   ],
   "pinData": {},
@@ -139,17 +162,28 @@
           }
         ]
       ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send Result to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "availableInMCP": false
   },
-  "versionId": "d2876d7b-47a7-4298-b0b9-9af71c86e98b",
+  "versionId": "3a33bf1d-5976-4ede-854f-12163a444ff2",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "c76f3b19be394cc3acfcc93e481a180706b7be970b6324ddb3a594da42f5fe04"
   },
-  "id": "xeRBwZdx3lqTocD2",
+  "id": "3QYvPWh62haZL-Qo3248f",
   "tags": []
 }

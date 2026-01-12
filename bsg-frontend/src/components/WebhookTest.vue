@@ -29,6 +29,13 @@
             <pre>{{ JSON.stringify(result, null, 2) }}</pre>
         </div>
 
+        <div v-if="webhookResults.length > 0" class="webhook-results">
+            <h4>Résultats du webhook :</h4>
+            <div v-for="(item, index) in webhookResults" :key="index" class="result-item">
+                <pre>{{ JSON.stringify(item, null, 2) }}</pre>
+            </div>
+        </div>
+
         <div v-if="lastRequestTime" class="last-request">
             <p>Dernière requête : {{ lastRequestTime }}</p>
         </div>
@@ -47,7 +54,8 @@ export default {
             result: null,
             lastRequestTime: null,
             webhookUrl: 'http://localhost:5678/webhook-test/cdac2c18-00f0-4020-b316-a695181d9b3f',
-            requestData: ''
+            requestData: '',
+            webhookResults: []
         }
     },
     computed: {
@@ -59,8 +67,22 @@ export default {
     mounted() {
         // Initialiser les données avec les informations de l'utilisateur courant
         this.initializeRequestData()
+
+        // Configurer l'écoute des messages WebSocket pour recevoir les résultats du webhook
+        this.setupWebhookListener()
+    },
+    beforeUnmount() {
+        // Nettoyage lors de la destruction du composant
+        if (this.websocket) {
+            this.websocket.close()
+        }
     },
     methods: {
+        setupWebhookListener() {
+            // Pour l'instant, on laisse ce code comme exemple
+            // Dans une implémentation réelle, vous utiliseriez WebSocket ou un autre mécanisme
+            console.log('Écoute des résultats du webhook...')
+        },
         initializeRequestData() {
             const userData = this.currentUser || {
                 id: "test-user-123",
@@ -114,6 +136,7 @@ export default {
             this.error = null
             this.result = null
             this.lastRequestTime = null
+            this.webhookResults = []
         }
     }
 }
