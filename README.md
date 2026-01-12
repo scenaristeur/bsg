@@ -58,108 +58,41 @@ L'utilisateur peut ensuite recevoir des notifications de rencontre avec d'autres
 - Base de données : SQLite
 - Communication : Axios pour les API calls
 
-## Structure du Projet
+## Parcours Utilisateur : Comment rencontrer du monde
 
-### Frontend (bsg-frontend/)
+### Étape 1 : Inscription et Création de Profil
 
-- `src/components/` : Composants Vue.js
-  - `Login.vue` : Composant de connexion
-  - `SignUp.vue` : Composant d'inscription
-  - `GameInterface.vue` : Interface principale du jeu
-- `src/stores/` : Store Pinia pour la gestion d'état
-  - `user.js` : Store utilisateur
-- `src/services/` : Services d'API
-  - `userService.js` : Service pour les appels API utilisateurs
-- `src/router/` : Routeur Vue.js
-  - `index.js` : Configuration des routes
-- `src/views/` : Vues principales
-  - `HomeView.vue` : Page d'accueil
-  - `AboutView.vue` : Page À propos
+1. Accédez à la page d'inscription
+2. Remplissez le formulaire avec vos informations personnelles
+3. Définissez vos centres d'intérêt et préférences de rencontre
+4. Validez votre inscription
 
-### Backend (backend/)
+### Étape 2 : Connexion à l'Application
 
-- `index.js` : Point d'entrée du serveur
-- `db.js` : Configuration de la base de données
-- `routes/users.js` : Routes API pour les utilisateurs
-- `views/index.html` : Page d'accueil avec formulaire d'inscription
-- `public/` : Fichiers statiques
+1. Retournez à la page de connexion
+2. Entrez votre email et mot de passe
+3. Accédez à votre interface de jeu
 
-## Étapes de Développement Réalisées
+### Étape 3 : Exploration et Participation aux Missions
 
-1. **Analyse et Planification**
+1. Naviguez vers l'onglet "Missions"
+2. Choisissez une mission sociale adaptée à vos centres d'intérêt
+3. Suivez les instructions pour participer à la mission
+4. Les missions peuvent vous amener à rencontrer d'autres utilisateurs
 
-   - Définition du concept détaillé
-   - Architecture technique
-   - Planification des fonctionnalités
+### Étape 4 : Réception et Gestion des Notifications de Rencontre
 
-2. **Frontend**
+1. Consultez l'onglet "Notifications"
+2. Recevez les suggestions de rencontres basées sur vos préférences
+3. Acceptez ou rejetez les propositions de rencontre
+4. Validez les rencontres via les défis interactifs
 
-   - Création de l'interface utilisateur principale
-   - Implémentation du composant GameInterface
-   - Développement des composants Login et SignUp
-   - Intégration du store Pinia pour la gestion des utilisateurs
-   - Mise en place du routeur Vue.js
+### Étape 5 : Interaction via la Carte Interactive
 
-3. **Backend**
-
-   - Configuration de la base de données SQLite
-   - Création des routes API pour les utilisateurs
-   - Implémentation des fonctionnalités CRUD
-   - Ajout de la table users avec tous les champs nécessaires
-
-4. **Intégration**
-   - Connexion frontend et backend
-   - Mise à jour des composants pour utiliser le store
-   - Correction des erreurs de syntaxe et d'accès aux données
-   - Amélioration de la sécurité et de la robustesse
-
-## Détails Techniques
-
-### Base de données SQLite
-
-La base de données contient une table `users` avec les champs suivants :
-
-- `id` (INTEGER PRIMARY KEY AUTOINCREMENT)
-- `nom` (TEXT)
-- `prenom` (TEXT)
-- `pseudo` (TEXT)
-- `email` (TEXT UNIQUE)
-- `password` (TEXT)
-- `age` (INTEGER)
-- `interets` (TEXT)
-- `preferencesRencontre` (TEXT)
-- `disponibilite` (TEXT)
-
-### API Backend
-
-Les endpoints disponibles :
-
-- `POST /api/users` : Création d'un utilisateur
-- `GET /api/users` : Récupération de tous les utilisateurs
-- `PUT /api/users/:id` : Mise à jour d'un utilisateur
-- `DELETE /api/users/:id` : Suppression d'un utilisateur
-- `POST /api/login` : Connexion utilisateur
-
-### Composants Frontend Principaux
-
-#### Login.vue
-
-- Formulaire de connexion avec validation
-- Redirection vers `/game` après connexion réussie
-- Gestion des erreurs de connexion
-
-#### SignUp.vue
-
-- Formulaire d'inscription avec tous les champs requis
-- Validation des données côté client
-- Redirection vers `/login` après inscription réussie
-
-#### GameInterface.vue
-
-- Interface principale avec navigation entre sections
-- Gestion du profil utilisateur
-- Système de notifications et de missions
-- Carte interactive de Lyon
+1. Accédez à l'onglet "Carte"
+2. Visualisez les points de rencontre sur la carte de Lyon
+3. Consultez les informations sur les rencontres proches
+4. Planifiez vos rencontres en utilisant les coordonnées fournies
 
 ## Comment Démarrer
 
@@ -182,14 +115,21 @@ npm install
 cd ../backend
 npm install
 
-# Démarrer le backend
+# Peupler la base de données (optionnel)
 cd backend
+node populate-db.js
+
+# Démarrer le backend
 npm start
 
 # Démarrer le frontend
 cd ../bsg-frontend
 npm run dev
 ```
+
+## Documentation Technique
+
+Pour plus de détails sur le développement et l'architecture technique, consultez le fichier [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Prochaines Étapes
 
