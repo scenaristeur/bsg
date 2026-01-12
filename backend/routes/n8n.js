@@ -102,8 +102,20 @@ router.post('/webhook-result', async (req, res) => {
             };
         } else {
             // Sinon, on utilise les champs traditionnels
-            user = data.user;
-            chatInput = data.chatInput;
+            // Si c'est directement un objet avec text
+            if (data.hasOwnProperty('text')) {
+                chatInput = data.text;
+                user = {
+                    id: "test-user-123",
+                    pseudo: "UtilisateurTest",
+                    prenom: "Test",
+                    nom: "Utilisateur",
+                    email: "test@example.com"
+                };
+            } else {
+                user = data.user;
+                chatInput = data.chatInput;
+            }
         }
 
         // Validation des données requises
@@ -121,8 +133,8 @@ router.post('/webhook-result', async (req, res) => {
         // Exemple de traitement : stocker dans la base de données
         const db = await getDB()
         await db.run(
-            'INSERT INTO evenements (type, description, utilisateur_id, details, created_at) VALUES (?, ?, ?, ?, ?)',
-            ['webhook_result', chatInput, user.id, JSON.stringify({ user, chatInput }), new Date().toISOString()]
+            'INSERT INTO evenements (nom, type, description, lieu, utilisateur_id, details, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            ['webhook_result', 'webhook_result', chatInput, 'Inconnu', user.id, JSON.stringify({ user, chatInput }), new Date().toISOString()]
         )
 
         // Retourner une réponse de succès

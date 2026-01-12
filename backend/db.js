@@ -89,7 +89,10 @@ export async function initDB() {
     latitude    REAL,
     longitude   REAL,
     type        TEXT        NOT NULL,
-    createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    utilisateur_id INTEGER,
+    details     TEXT,
+    createdAt   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (utilisateur_id) REFERENCES users (id)
     )
     `)
 
