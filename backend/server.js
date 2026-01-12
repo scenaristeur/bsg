@@ -45,7 +45,7 @@ import evenementsRouter from './routes/evenements.js'
 import N8nRouter from './routes/n8n.js'
 
 // Passer io au routeur n8n
-N8nRouter.setIo(io)
+const n8nRouterWithIo = new N8nRouter(io).getRouter()
 
 // Utilisation des routeurs
 app.use('/api/users', usersRouter)

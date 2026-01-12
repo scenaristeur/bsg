@@ -84,6 +84,7 @@ RETOURNE UNIQUEMENT CE JSON SANS AUCUN TEXTE SUPPLÉMENTAIRE :
 {"titre": "Titre de la mission", "description": "Description détaillée", "difficulte": "Facile|Moyen|Difficile", "objectifs": "objectif1,objectif2,objectif3", "indices": "Indices pertinents", "user_id": "indentifiant du user"}
 
 NE RETOURNE JAMAIS QUE LE JSON, RIEN D'AUTRE. PAS DE MARKDOWN, PAS D'EXPLICATIONS, PAS DE TEXTES INTRODUCTIFS. N'UTILISE PAS LE FORMATAGE JSON : ``json\n'...`
-N'UTILISE PAS DE CARACTERE D'ECHAPPEMENT COMME : "L\\'Enquête".
+N'UTILISE PAS DE CARACTERE D'ECHAPPEMENT COMME : "L\\'Enquête" ou "L\'Enquête", écris directement "L'Enquête".
+N'UTILISE PAS DE CARACTERES UNICODES.
 ON DOIT POUVOIR PARSER LE JSON DIRECTEMENT.
 LE user_id QUE TU DOIS OBLIGATOIREMENT UTILISER EST LE : {{ $json.user.id }}

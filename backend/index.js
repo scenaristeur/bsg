@@ -29,7 +29,21 @@ import missionsRouter from './routes/missions.js'
 import rencontresRouter from './routes/rencontres.js'
 import interactionsRouter from './routes/interactions.js'
 import evenementsRouter from './routes/evenements.js'
-import n8nRouter from './routes/n8n.js'
+import N8nRouter from './routes/n8n.js'
+
+// Création du serveur WebSocket
+import http from 'http'
+import { Server } from 'socket.io'
+const server = http.createServer(app)
+const io = new Server(server, {
+    cors: {
+        origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5678'],
+        methods: ['GET', 'POST']
+    }
+})
+
+// Passer io au routeur n8n
+const n8nRouterWithIo = new N8nRouter(io).getRouter()
 
 // Utilisation des routeurs
 app.use('/api/users', usersRouter)
@@ -37,7 +51,7 @@ app.use('/api/missions', missionsRouter)
 app.use('/api/rencontres', rencontresRouter)
 app.use('/api/interactions', interactionsRouter)
 app.use('/api/evenements', evenementsRouter)
-app.use('/api/n8n', n8nRouter)
+app.use('/api/n8n', n8nRouterWithIo)
 
 // Route de test pour vérifier que le serveur fonctionne
 app.get('/test', (req, res) => {

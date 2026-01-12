@@ -2,7 +2,7 @@
     <div class="missions-view">
         <h2>Missions</h2>
         <GenerateMissionButton />
-
+        hjkug
         <div class="missions-list">
             <h3>Missions en cours</h3>
             <div v-if="loading" class="loading">Chargement...</div>
@@ -56,7 +56,6 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
 import GenerateMissionButton from './GenerateMissionButton.vue'
 import { useUserStore } from '@/stores/user'
 import { api } from '../utils/api'
@@ -67,108 +66,102 @@ export default {
     components: {
         GenerateMissionButton
     },
-    setup() {
-        const userMissions = ref([])
-        const loading = ref(false)
-        const errorMessage = ref('')
-        const userStore = useUserStore()
-        const socket = ref(null)
-
+    data() {
+        return {
+            userMissions: [],
+            loading: false,
+            errorMessage: '',
+            socket: null
+        }
+    },
+    computed: {
+        currentUser() {
+            const userStore = useUserStore()
+            return userStore.currentUser
+        }
+    },
+    mounted() {
+        console.log(this.currentUser, "user")
+        // if (this.currentUser) {
+        this.fetchUserMissions()
+        this.initWebSocket()
+        // }
+    },
+    beforeUnmount() {
+        this.cleanupWebSocket()
+    },
+    methods: {
         // Récupération des missions de l'utilisateur
-        const fetchUserMissions = async () => {
-            if (!userStore.currentUser) return
+        async fetchUserMissions() {
+            console.log("fetch missions")
+            if (!this.currentUser) return
 
             try {
-                loading.value = true
-                errorMessage.value = ''
+                this.loading = true
+                this.errorMessage = ''
 
-                // Utilisation de l'API existante
-                const response = await api.getMissions()
-                // Filtrer les missions pour ne garder que celles de l'utilisateur
-                userMissions.value = response.filter(mission =>
-                    mission.assignee && mission.assignee.user_id === userStore.currentUser.id
-                )
+                // Utilisation de l'API spécifique pour les missions d'un utilisateur
+                const response = await api.request(`/api/missions/user/${this.currentUser.id}`)
+                this.userMissions = response
             } catch (error) {
                 console.error('Erreur lors de la récupération des missions de l\'utilisateur:', error)
-                errorMessage.value = 'Erreur lors de la récupération des missions'
+                this.errorMessage = 'Erreur lors de la récupération des missions'
             } finally {
-                loading.value = false
+                this.loading = false
             }
-        }
+        },
 
         // Formatage de la date
-        const formatDate = (dateString) => {
+        formatDate(dateString) {
             if (!dateString) return 'Inconnue'
             const date = new Date(dateString)
             return date.toLocaleDateString('fr-FR')
-        }
+        },
 
         // Commencer une mission
-        const startMission = (missionId) => {
+        startMission(missionId) {
             console.log('Commencer la mission:', missionId)
             // Ici, vous pouvez rediriger vers la page de détails de la mission
-        }
+        },
 
         // Voir les détails d'une mission
-        const viewMissionDetails = (missionId) => {
+        viewMissionDetails(missionId) {
             console.log('Voir les détails de la mission:', missionId)
             // Ici, vous pouvez rediriger vers la page de détails de la mission
-        }
+        },
 
         // Initialisation du WebSocket
-        const initWebSocket = () => {
-            if (!userStore.currentUser) return
+        initWebSocket() {
+            if (!this.currentUser) return
 
-            socket.value = io('http://localhost:3000', {
+            this.socket = io('http://localhost:3000', {
                 transports: ['websocket']
             })
 
             // Connexion au salon de l'utilisateur
-            socket.value.emit('joinRoom', `user_${userStore.currentUser.id}`)
+            this.socket.emit('joinRoom', `user_${this.currentUser.id}`)
 
             // Écoute des notifications de nouvelles missions
-            socket.value.on('missionCreated', (data) => {
+            this.socket.on('missionCreated', (data) => {
                 console.log('Nouvelle mission créée:', data)
                 // Rafraîchir la liste des missions
-                fetchUserMissions()
+                this.fetchUserMissions()
             })
 
-            socket.value.on('connect', () => {
+            this.socket.on('connect', () => {
                 console.log('Connecté au serveur WebSocket')
             })
 
-            socket.value.on('disconnect', () => {
+            this.socket.on('disconnect', () => {
                 console.log('Déconnecté du serveur WebSocket')
             })
-        }
+        },
 
         // Nettoyage des ressources WebSocket
-        const cleanupWebSocket = () => {
-            if (socket.value) {
-                socket.value.disconnect()
+        cleanupWebSocket() {
+            if (this.socket) {
+                this.socket.disconnect()
             }
-        }
-
-        // Montage du composant
-        onMounted(() => {
-            if (userStore.currentUser) {
-                fetchUserMissions()
-                initWebSocket()
-            }
-        })
-
-        // Démontage du composant
-        onUnmounted(() => {
-            cleanupWebSocket()
-        })
-
-        return {
-            userMissions,
-            loading,
-            errorMessage,
-            formatDate,
-            startMission,
-            viewMissionDetails
         }
     }
 }
@@ -315,4 +308,3 @@ export default {
     }
 }
 </style>
-</content>

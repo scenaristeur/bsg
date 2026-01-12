@@ -5,36 +5,62 @@
         <!-- Bouton pour générer une nouvelle mission -->
         <GenerateMissionButton />
 
-        <div class="mission-card" v-if="currentMission">
-            <div class="mission-header">
-                <h3>{{ currentMission.titre }}</h3>
-                <span class="difficulty">{{ currentMission.difficulte }}</span>
+        <div class="missions-list">
+            <h3>Missions en cours</h3>
+            <div v-if="loading" class="loading">Chargement...</div>
+
+            <div v-if="errorMessage" class="error-message">
+                {{ errorMessage }}
             </div>
-            <div class="mission-description">
-                <p>{{ currentMission.description }}</p>
+
+            <div v-if="!loading && !errorMessage && userMissions.length === 0" class="no-missions">
+                Aucune mission en cours.
             </div>
-            <div class="mission-objectives">
-                <h4>Objectifs:</h4>
-                <ul>
-                    <li v-for="objectif in currentMission.objectifs" :key="objectif">{{ objectif }}</li>
-                </ul>
+
+            <div v-for="mission in userMissions" :key="mission.id" class="mission-card">
+                <div class="mission-header">
+                    <h4>{{ mission.titre }}</h4>
+                    <span class="difficulty-badge" :class="mission.difficulte.toLowerCase()">
+                        {{ mission.difficulte }}
+                    </span>
+                </div>
+
+                <div class="mission-content">
+                    <p class="mission-description">{{ mission.description }}</p>
+
+                    <div v-if="mission.objectifs" class="mission-section">
+                        <h5>Objectifs:</h5>
+                        <ul>
+                            <li v-for="(objective, index) in mission.objectifs.split(',')" :key="index">
+                                {{ objective.trim() }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div v-if="mission.indices" class="mission-section">
+                        <h5>Indices:</h5>
+                        <p>{{ mission.indices }}</p>
+                    </div>
+
+                    <div class="mission-meta">
+                        <p><strong>Créée le:</strong> {{ formatDate(mission.createdAt) }}</p>
+                        <p><strong>Statut:</strong> {{ mission.statut }}</p>
+                    </div>
+                </div>
+
+                <div class="mission-actions">
+                    <button @click="startMission(mission.id)" class="btn btn-primary">Commencer</button>
+                    <button @click="viewMissionDetails(mission.id)" class="btn btn-secondary">Détails</button>
+                </div>
             </div>
-            <div class="mission-hints" v-if="currentMission.indices">
-                <h4>Indices:</h4>
-                <p>{{ currentMission.indices }}</p>
-            </div>
-            <div class="mission-actions">
-                <button @click="startMission" class="start-btn">Commencer la mission</button>
-            </div>
-        </div>
-        <div v-else class="no-missions">
-            <p>Aucune mission active pour le moment.</p>
         </div>
     </div>
 </template>
 
 <script>
 import GenerateMissionButton from '../GenerateMissionButton.vue'
+import { useUserStore } from '../../stores/user'
+import { missionService } from '../../services/missionService'
 
 export default {
     name: 'MissionsView',
@@ -43,22 +69,59 @@ export default {
     },
     data() {
         return {
-            currentMission: {
-                titre: 'Le Mystère du Café',
-                difficulte: 'Facile',
-                description: 'Trouvez l\'indice caché dans le café de la place Bellecour pour découvrir le prochain lieu de la mission.',
-                objectifs: [
-                    'Identifier le lieu de la mission',
-                    'Trouver l\'indice caché',
-                    'Résoudre l\'énigme'
-                ],
-                indices: 'L\'indice est caché dans le café, derrière le bar.'
-            }
+            userMissions: [],
+            loading: false,
+            errorMessage: ''
+        }
+    },
+    computed: {
+        currentUser() {
+            const userStore = useUserStore()
+            return userStore.currentUser
+        }
+    },
+    mounted() {
+        if (this.currentUser) {
+            this.fetchUserMissions()
         }
     },
     methods: {
-        startMission() {
-            alert('Mission commencée ! Bonne chance.')
+        // Récupération des missions de l'utilisateur
+        async fetchUserMissions() {
+            if (!this.currentUser) return
+
+            try {
+                this.loading = true
+                this.errorMessage = ''
+
+                // Utilisation du service pour récupérer les missions
+                const missions = await missionService.getUserMissions(this.currentUser.id)
+                this.userMissions = missions
+            } catch (error) {
+                console.error('Erreur lors de la récupération des missions de l\'utilisateur:', error)
+                this.errorMessage = 'Erreur lors de la récupération des missions'
+            } finally {
+                this.loading = false
+            }
+        },
+
+        // Formatage de la date
+        formatDate(dateString) {
+            if (!dateString) return 'Inconnue'
+            const date = new Date(dateString)
+            return date.toLocaleDateString('fr-FR')
+        },
+
+        // Commencer une mission
+        startMission(missionId) {
+            console.log('Commencer la mission:', missionId)
+            // Ici, vous pouvez rediriger vers la page de détails de la mission
+        },
+
+        // Voir les détails d'une mission
+        viewMissionDetails(missionId) {
+            console.log('Voir les détails de la mission:', missionId)
+            // Ici, vous pouvez rediriger vers la page de détails de la mission
         }
     }
 }
@@ -69,73 +132,136 @@ export default {
     padding: 1rem;
 }
 
+.missions-list {
+    margin-top: 20px;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.error-message {
+    color: red;
+    padding: 10px;
+    background-color: #ffebee;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.no-missions {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    font-style: italic;
+}
+
 .mission-card {
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #f8f9fa;
+    padding: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
 }
 
 .mission-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
-.mission-header h3 {
+.mission-header h4 {
     margin: 0;
-    color: #333;
+    color: #007bff;
 }
 
-.difficulty {
-    background-color: #ffc107;
-    color: #212529;
-    padding: 0.25rem 0.5rem;
+.difficulty-badge {
+    padding: 4px 8px;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 12px;
     font-weight: bold;
 }
 
-.mission-description p {
-    margin: 0.5rem 0;
+.difficulty-badge.facile {
+    background-color: #d4edda;
+    color: #155724;
 }
 
-.mission-objectives h4,
-.mission-hints h4 {
-    margin: 1rem 0 0.5rem 0;
-    color: #333;
+.difficulty-badge.moyen {
+    background-color: #fff3cd;
+    color: #856404;
 }
 
-.mission-objectives ul {
-    margin: 0.5rem 0;
-    padding-left: 1rem;
+.difficulty-badge.difficile {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.mission-content {
+    margin-bottom: 15px;
+}
+
+.mission-description {
+    margin: 0 0 10px 0;
+    font-style: italic;
+}
+
+.mission-section {
+    margin-bottom: 10px;
+}
+
+.mission-section h5 {
+    margin: 0 0 5px 0;
+    color: #007bff;
+}
+
+.mission-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.mission-meta {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #6c757d;
 }
 
 .mission-actions {
-    margin-top: 1rem;
-    text-align: center;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
-.start-btn {
-    padding: 0.75rem 1.5rem;
-    background-color: #007bff;
-    color: white;
+.btn {
+    padding: 8px 12px;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.start-btn:hover {
-    background-color: #0056b3;
+.btn-primary {
+    background-color: #007bff;
+    color: white;
 }
 
-.no-missions {
-    text-align: center;
-    padding: 2rem;
-    color: #6c757d;
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .mission-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mission-actions {
+        flex-direction: column;
+    }
 }
 </style>
