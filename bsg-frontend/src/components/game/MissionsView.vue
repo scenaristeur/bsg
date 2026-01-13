@@ -61,6 +61,7 @@
 import GenerateMissionButton from '../GenerateMissionButton.vue'
 import { useUserStore } from '../../stores/user'
 import { missionService } from '../../services/missionService'
+import { io } from 'socket.io-client'
 
 export default {
     name: 'MissionsView',
@@ -71,7 +72,8 @@ export default {
         return {
             userMissions: [],
             loading: false,
-            errorMessage: ''
+            errorMessage: '',
+            socket: null
         }
     },
     computed: {
@@ -83,7 +85,11 @@ export default {
     mounted() {
         if (this.currentUser) {
             this.fetchUserMissions()
+            this.initWebSocket()
         }
+    },
+    beforeUnmount() {
+        this.cleanupWebSocket()
     },
     methods: {
         // Récupération des missions de l'utilisateur
@@ -122,6 +128,40 @@ export default {
         viewMissionDetails(missionId) {
             console.log('Voir les détails de la mission:', missionId)
             // Ici, vous pouvez rediriger vers la page de détails de la mission
+        },
+
+        // Initialisation du WebSocket
+        initWebSocket() {
+            if (!this.currentUser) return
+
+            this.socket = io('http://localhost:3000', {
+                transports: ['websocket']
+            })
+
+            // Connexion au salon de l'utilisateur
+            this.socket.emit('joinRoom', `user_${this.currentUser.id}`)
+
+            // Écoute des notifications de nouvelles missions
+            this.socket.on('missionCreated', (data) => {
+                console.log('Nouvelle mission créée:', data)
+                // Rafraîchir la liste des missions
+                this.fetchUserMissions()
+            })
+
+            this.socket.on('connect', () => {
+                console.log('Connecté au serveur WebSocket')
+            })
+
+            this.socket.on('disconnect', () => {
+                console.log('Déconnecté du serveur WebSocket')
+            })
+        },
+
+        // Nettoyage des ressources WebSocket
+        cleanupWebSocket() {
+            if (this.socket) {
+                this.socket.disconnect()
+            }
         }
     }
 }

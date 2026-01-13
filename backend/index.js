@@ -4,6 +4,9 @@ import bodyParser from 'body-parser'
 import cors from "cors";
 import path from 'path'
 import bcrypt from 'bcrypt'
+import http from 'http'
+import { Server } from 'socket.io'
+
 // import dotenv from "dotenv"
 // dotenv.config()
 
@@ -11,6 +14,14 @@ const PORT = process.env.PORT || 3000
 const SALT_ROUNDS = 10
 
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server, {
+    cors: {
+        origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5678'],
+        methods: ['GET', 'POST']
+    }
+})
+
 app.use(bodyParser.json())
 app.use(express.static("public"))
 app.use(cors({
@@ -21,6 +32,8 @@ app.use(cors({
     'credentials': true,
     'preflightContinue': false
 }));
+
+// Initialisation de la base de données
 initDB()
 
 // Importer les nouveaux routeurs
@@ -30,17 +43,6 @@ import rencontresRouter from './routes/rencontres.js'
 import interactionsRouter from './routes/interactions.js'
 import evenementsRouter from './routes/evenements.js'
 import N8nRouter from './routes/n8n.js'
-
-// Création du serveur WebSocket
-import http from 'http'
-import { Server } from 'socket.io'
-const server = http.createServer(app)
-const io = new Server(server, {
-    cors: {
-        origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5678'],
-        methods: ['GET', 'POST']
-    }
-})
 
 // Passer io au routeur n8n
 const n8nRouterWithIo = new N8nRouter(io).getRouter()
@@ -111,6 +113,19 @@ app.get("/about", (req, res) => {
     res.send("<h1>Bonjour</h1>")
 })
 
-app.listen(PORT, () => {
+// Gestion des connexions WebSocket
+io.on('connection', (socket) => {
+    console.log('Un utilisateur s\'est connecté:', socket.id)
+
+    socket.on('disconnect', () => {
+        console.log('Un utilisateur s\'est déconnecté:', socket.id)
+    })
+})
+
+// Démarrage du serveur
+server.listen(PORT, () => {
     console.log(`backend running on ${PORT}`)
 })
+
+// Exporter io pour pouvoir l'utiliser dans d'autres modules
+export { io }

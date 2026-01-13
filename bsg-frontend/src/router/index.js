@@ -40,25 +40,25 @@ const router = createRouter({
       path: '/missions',
       name: 'missions',
       // Lazy loading for the missions component
-      component: () => import('../components/MissionsView.vue'),
+      component: () => import('../components/game/MissionsView.vue'),
     },
     {
       path: '/notifications',
       name: 'notifications',
       // Lazy loading for the notifications component
-      component: () => import('../components/NotificationsView.vue'),
+      component: () => import('../components/game/NotificationsView.vue'),
     },
     {
       path: '/profile',
       name: 'profile',
       // Lazy loading for the profile component
-      component: () => import('../components/ProfileView.vue'),
+      component: () => import('../components/game/ProfileView.vue'),
     },
     {
       path: '/map',
       name: 'map',
       // Lazy loading for the map component
-      component: () => import('../components/MapView.vue'),
+      component: () => import('../components/game/MapView.vue'),
     },
     {
       path: '/game',
