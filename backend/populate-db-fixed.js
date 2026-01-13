@@ -301,7 +301,7 @@ async function populateDatabase() {
 
             let contenu = '';
             if (type === 'message') {
-                contenu = `Bonjour, j'ai vu que tu faisais la mission ${Math.floor(Math.random() * 15) + 1}. Tu as des conseils à partager ?`;
+                conteúdo = `Bonjour, j'ai vu que tu faisais la mission ${Math.floor(Math.random() * 15) + 1}. Tu as des conseils à partager ?`;
             } else if (type === 'appel') {
                 conteúdo = `Appel pour discuter de notre rencontre prévue.`;
             } else {

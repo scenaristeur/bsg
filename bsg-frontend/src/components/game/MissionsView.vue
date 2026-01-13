@@ -152,6 +152,8 @@ export default {
             // Écoute des notifications de nouvelles missions
             this.socket.on('missionCreated', (data) => {
                 console.log('Nouvelle mission créée (frontend):', data)
+                // Afficher une notification discrète
+                this.showNotification(data.mission.titre)
                 // Rafraîchir la liste des missions
                 this.fetchUserMissions()
             })
@@ -171,6 +173,54 @@ export default {
             if (this.socket) {
                 this.socket.disconnect()
             }
+        },
+
+        // Affichage d'une notification discrète
+        showNotification(titreMission) {
+            // Création d'un élément de notification
+            const notification = document.createElement('div')
+            notification.className = 'toast-notification'
+            notification.textContent = `La mission '${titreMission}' est maintenant disponible`
+
+            // Style basique pour la notification
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 1000;
+                animation: fadeInOut 3s ease-in-out;
+            `
+
+            // Ajout de l'animation CSS
+            const style = document.createElement('style')
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateY(-20px); }
+                    10% { opacity: 1; transform: translateY(0); }
+                    90% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-20px); }
+                }
+            `
+            document.head.appendChild(style)
+
+            // Ajout à la page
+            document.body.appendChild(notification)
+
+            // Suppression automatique après 3 secondes
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification)
+                }
+                // Supprimer le style après la suppression
+                if (style.parentNode) {
+                    style.parentNode.removeChild(style)
+                }
+            }, 3000)
         }
     }
 }

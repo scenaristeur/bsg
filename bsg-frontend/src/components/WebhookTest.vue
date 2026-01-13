@@ -53,7 +53,7 @@ export default {
             error: null,
             result: null,
             lastRequestTime: null,
-            webhookUrl: 'http://localhost:5678/webhook-test/cdac2c18-00f0-4020-b316-a695181d9b3f',
+            webhookUrl: 'http://localhost:5678/webhook/cdac2c18-00f0-4020-b316-a695181d9b3f',
             requestData: '',
             webhookResults: []
         }

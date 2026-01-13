@@ -112,7 +112,7 @@ router.post('/generate-mission', async (req, res) => {
 
         // Appel à l'agent n8n pour générer la mission
         // Utilisation de l'URL du webhook n8n configuré
-        const n8nWebhookUrl = 'http://localhost:5678/webhook-test/cdac2c18-00f0-4020-b316-a695181d9b3f'
+        const n8nWebhookUrl = 'http://localhost:5678/webhook/cdac2c18-00f0-4020-b316-a695181d9b3f'
 
         // Données à envoyer à n8n
         const n8nPayload = {
