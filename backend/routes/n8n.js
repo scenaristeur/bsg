@@ -281,6 +281,7 @@ class N8nRouter {
                     const mission = await db.get('SELECT * FROM missions WHERE id = ?', [missionId])
                     if (mission) {
                         // Envoyer la notification à l'utilisateur concerné
+                        console.log(`Envoi de la notification WebSocket à user_${missionData.user_id}`);
                         this.io.to(`user_${missionData.user_id}`).emit('missionCreated', {
                             message: `Votre mission "${mission.titre}" vient d'être créée !`,
                             mission: mission,

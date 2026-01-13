@@ -114,11 +114,40 @@ app.get("/about", (req, res) => {
 })
 
 // Gestion des connexions WebSocket
+// Tableau pour garder trace des sockets connectés par utilisateur
+const userSockets = new Map()
+
 io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est connecté:', socket.id)
+    console.log('Query params:', socket.handshake.query)
+
+    // Gestion de la connexion à un salon
+    socket.on('joinRoom', (roomName) => {
+        console.log('Socket', socket.id, 'rejoint le salon', roomName)
+        socket.join(roomName)
+    })
+
+    // Gestion de l'identification utilisateur
+    if (socket.handshake.query.userId) {
+        const userId = socket.handshake.query.userId
+        console.log('Socket', socket.id, 'identifié comme utilisateur', userId)
+
+        // Stocker le socket par utilisateur
+        userSockets.set(userId, socket.id)
+        console.log('Tableau des sockets:', Object.fromEntries(userSockets))
+    }
 
     socket.on('disconnect', () => {
         console.log('Un utilisateur s\'est déconnecté:', socket.id)
+        // Retirer le socket de la liste des sockets connectés
+        for (const [userId, socketId] of userSockets.entries()) {
+            if (socketId === socket.id) {
+                userSockets.delete(userId)
+                console.log('Socket retiré du tableau pour l\'utilisateur', userId)
+                break
+            }
+        }
+        console.log('Tableau des sockets après déconnexion:', Object.fromEntries(userSockets))
     })
 })
 

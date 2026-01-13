@@ -83,9 +83,13 @@ export default {
         }
     },
     mounted() {
+        console.log('MissionsView mounted, currentUser:', this.currentUser)
         if (this.currentUser) {
+            console.log('Fetching user missions for:', this.currentUser.id)
             this.fetchUserMissions()
             this.initWebSocket()
+        } else {
+            console.log('No currentUser found')
         }
     },
     beforeUnmount() {
@@ -135,21 +139,26 @@ export default {
             if (!this.currentUser) return
 
             this.socket = io('http://localhost:3000', {
-                transports: ['websocket']
+                transports: ['websocket'],
+                query: {
+                    userId: this.currentUser.id
+                }
             })
 
             // Connexion au salon de l'utilisateur
+            console.log('Émission joinRoom pour user_', this.currentUser.id)
             this.socket.emit('joinRoom', `user_${this.currentUser.id}`)
 
             // Écoute des notifications de nouvelles missions
             this.socket.on('missionCreated', (data) => {
-                console.log('Nouvelle mission créée:', data)
+                console.log('Nouvelle mission créée (frontend):', data)
                 // Rafraîchir la liste des missions
                 this.fetchUserMissions()
             })
 
             this.socket.on('connect', () => {
-                console.log('Connecté au serveur WebSocket')
+                console.log('Connecté au serveur WebSocket avec socket ID:', this.socket.id)
+                console.log('Connexion avec userId:', this.currentUser.id)
             })
 
             this.socket.on('disconnect', () => {
