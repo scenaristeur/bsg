@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bsg : Votre Invitation Exclusive</title>
+    <meta name="description"
+        content="Rejoignez le premier cercle d'explorateurs urbains. Une aventure sociale et gratuite arrive dans votre ville.">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+    <!-- IMPORTANT pour le SEO PWA[citation:4][citation:9] : Lien vers le futur manifeste -->
+    <link rel="manifest" href="/pwa/manifest.json">
+</head>
+
+<body>
+    <div class="container">
+        <header class="site-header">
+            <h1 class="logo">Bsg</h1>
+            <p class="tagline">Bienveillante Social Game • L'aventure est dans la rue</p>
+        </header>
+
+        <main class="hero">
+            <!-- Titre & Sous-titre -->
+            <h1 class="hero-title">Votre invitation pour l'aventure Bsg est ici.</h1>
+            <p class="hero-subtitle">Rejoignez le premier cercle d'explorateurs urbains. Un nombre limité d'accès est
+                ouvert pour transformer les rues de <strong>Lyon</strong> en votre terrain de jeu personnel.</p>
+
+            <!-- Compteur de Lancement (à activer avec JS) -->
+            <div class="countdown-container">
+                <p>Lancement officiel dans :</p>
+                <div id="countdown-timer" class="countdown">
+                    <span id="days">--</span>j <span id="hours">--</span>h <span id="minutes">--</span>m
+                </div>
+            </div>
+
+            <!-- Formulaire d'inscription -->
+            <form id="early-access-form" class="signup-form">
+                <!-- COLLEZ L'IFRAME DE VOTRE FORMULAIRE GRIST ICI -->
+                <iframe src="https://docs.getgrist.com/forms/kybfsKLYaqbyRDoCdfJt2x/4" class="grist-form"
+                    title="Formulaire d'inscription Bsg">
+                </iframe>
+                <!-- FIN DE L'IFRAME -->
+                <!-- <div class="form-group">
+                    <input type="email" class="form-input" id="email" name="email" placeholder="votre.email@exemple.com"
+                        required>
+                </div>
+                <button type="submit" class="cta-button">Accepter l'invitation</button> -->
+            </form>
+            <p class="form-disclaimer">Votre email ne servira qu'à vous envoyer votre accès. Aucun spam.</p>
+
+            <!-- Indicateur de places limitées -->
+            <div class="invite-counter">
+                <p><span id="invites-taken">247</span> / 500 invitations acceptées</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <p>Bsg © 2026 • <a href="/landing-pages/viral.html" style="color: var(--secondary);">Devenez ambassadeur</a>
+                • <a href="mailto:scenaristeur@gmail.com" style="color: #aaa;">Contact</a></p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/countdown.js"></script>
+    <script src="assets/js/form-handler.js"></script>
+    <script>
+        // Exemple de configuration du compteur pour une date future
+        const launchDate = new Date('2026-05-15T00:00:00').getTime();
+        // Initialiser le compte à rebours (voir countdown.js)
+    </script>
+</body>
+
+</html>
