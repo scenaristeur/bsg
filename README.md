@@ -139,3 +139,7 @@ Pour plus de détails sur le développement et l'architecture technique, consult
 4. Intégration de géolocalisation avancée
 5. Tests unitaires et d'intégration
 6. Documentation utilisateur
+
+# utilisation de grist ?
+
+- https://gristexpert.fr/
