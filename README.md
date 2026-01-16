@@ -143,3 +143,4 @@ Pour plus de détails sur le développement et l'architecture technique, consult
 # utilisation de grist ?
 
 - https://gristexpert.fr/
+- grist & n8n https://forum.grist.libre.sh/t/workflows-basiques-avec-n8n/457
