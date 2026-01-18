@@ -27,8 +27,16 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Création du trigger pour la table users
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table users (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_users_updated_at' AND tgrelid = 'users'::regclass
+    ) THEN
+        CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Table poi (Points d'intérêt avec PostGIS)
 CREATE TABLE IF NOT EXISTS poi (
@@ -45,8 +53,16 @@ CREATE TABLE IF NOT EXISTS poi (
 -- Création de l'index spatial pour les requêtes géolocalisées
 CREATE INDEX IF NOT EXISTS idx_poi_geom ON poi USING GIST(geom);
 
--- Création du trigger pour la table poi
-CREATE TRIGGER update_poi_updated_at BEFORE UPDATE ON poi FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table poi (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_poi_updated_at' AND tgrelid = 'poi'::regclass
+    ) THEN
+        CREATE TRIGGER update_poi_updated_at BEFORE UPDATE ON poi FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Table missions
 CREATE TABLE IF NOT EXISTS missions (
@@ -60,8 +76,16 @@ CREATE TABLE IF NOT EXISTS missions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Création du trigger pour la table missions
-CREATE TRIGGER update_missions_updated_at BEFORE UPDATE ON missions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table missions (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_missions_updated_at' AND tgrelid = 'missions'::regclass
+    ) THEN
+        CREATE TRIGGER update_missions_updated_at BEFORE UPDATE ON missions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Table mission_poi (relation missions ↔ POIs)
 CREATE TABLE IF NOT EXISTS mission_poi (
@@ -84,8 +108,16 @@ CREATE TABLE IF NOT EXISTS user_missions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Création du trigger pour la table user_missions
-CREATE TRIGGER update_user_missions_updated_at BEFORE UPDATE ON user_missions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table user_missions (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_user_missions_updated_at' AND tgrelid = 'user_missions'::regclass
+    ) THEN
+        CREATE TRIGGER update_user_missions_updated_at BEFORE UPDATE ON user_missions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Table events (journal de toutes les actions)
 CREATE TABLE IF NOT EXISTS events (
@@ -109,8 +141,16 @@ CREATE TABLE IF NOT EXISTS shared_objects (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Création du trigger pour la table shared_objects
-CREATE TRIGGER update_shared_objects_updated_at BEFORE UPDATE ON shared_objects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table shared_objects (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_shared_objects_updated_at' AND tgrelid = 'shared_objects'::regclass
+    ) THEN
+        CREATE TRIGGER update_shared_objects_updated_at BEFORE UPDATE ON shared_objects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Table interactions (échanges entre joueurs)
 CREATE TABLE IF NOT EXISTS interactions (
@@ -135,8 +175,16 @@ CREATE TABLE IF NOT EXISTS help_requests (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Création du trigger pour la table help_requests
-CREATE TRIGGER update_help_requests_updated_at BEFORE UPDATE ON help_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Création du trigger pour la table help_requests (si non existant)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_help_requests_updated_at' AND tgrelid = 'help_requests'::regclass
+    ) THEN
+        CREATE TRIGGER update_help_requests_updated_at BEFORE UPDATE ON help_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- Activation de RLS sur toutes les tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -148,6 +196,23 @@ ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shared_objects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE interactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE help_requests ENABLE ROW LEVEL SECURITY;
+
+-- Politiques de sécurité pour la table users
+-- Autoriser les utilisateurs à voir leur propre profil
+CREATE POLICY "Users can view their own profile" ON users
+FOR SELECT USING (id = auth.uid());
+
+-- Autoriser les utilisateurs à créer leur propre profil
+CREATE POLICY "Users can create their own profile" ON users
+FOR INSERT WITH CHECK (id = auth.uid());
+
+-- Autoriser les utilisateurs à mettre à jour leur propre profil
+CREATE POLICY "Users can update their own profile" ON users
+FOR UPDATE USING (id = auth.uid());
+
+-- Autoriser les utilisateurs à supprimer leur propre profil
+CREATE POLICY "Users can delete their own profile" ON users
+FOR DELETE USING (id = auth.uid());
 
 -- Création de la table de test "truc"
 CREATE TABLE IF NOT EXISTS truc (

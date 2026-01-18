@@ -10,6 +10,16 @@ class AuthManager {
     }
 
     /**
+     * Définir l'utilisateur courant
+     * @param {Object} user - Informations de l'utilisateur
+     */
+    setCurrentUser(user) {
+        this.currentUser = user;
+        this.isAuthenticated = !!user;
+        console.log('Utilisateur courant défini:', user);
+    }
+
+    /**
      * Inscription d'un nouvel utilisateur
      * @param {Object} userData - Données de l'utilisateur
      * @returns {Object} Résultat de l'inscription
@@ -43,21 +53,9 @@ class AuthManager {
                 this.currentUser = data.user
                 this.isAuthenticated = true
 
-                // Création de l'enregistrement dans la table users
-                const { error: userError } = await supabase
-                    .from('users')
-                    .insert([{
-                        id: data.user.id,
-                        pseudo: userData.pseudo || '',
-                        nom: userData.nom || '',
-                        prenom: userData.prenom || '',
-                        competences: [],
-                        historique: []
-                    }])
-
-                if (userError) {
-                    console.warn('Erreur lors de la création de l\'enregistrement utilisateur:', userError)
-                }
+                // L'enregistrement dans la table users est géré automatiquement par Supabase
+                // via les triggers ou les hooks d'authentification
+                // On ne fait pas d'insertion manuelle ici
 
                 return {
                     success: true,
@@ -103,15 +101,59 @@ class AuthManager {
                 this.currentUser = data.user
                 this.isAuthenticated = true
 
-                // Récupération des données complètes de l'utilisateur
+                console.log('UUID de l\'utilisateur connecté:', data.user.id);
+
+                // Vérification si l'utilisateur existe déjà dans la table users
                 const { data: userData, error: userError } = await supabase
                     .from('users')
                     .select('*')
                     .eq('id', data.user.id)
                     .single()
 
-                if (!userError && userData) {
+                if (userError) {
+                    // Si l'utilisateur n'existe pas encore dans la table users, on le crée
+                    console.log('Création de l\'utilisateur dans la table users...');
+                    const { error: insertError } = await supabase
+                        .from('users')
+                        .insert([{
+                            id: data.user.id,
+                            pseudo: data.user.user_metadata?.pseudo || '',
+                            nom: data.user.user_metadata?.nom || '',
+                            prenom: data.user.user_metadata?.prenom || '',
+                            competences: [],
+                            historique: []
+                        }])
+
+                    if (insertError) {
+                        console.error('Erreur lors de la création de l\'utilisateur dans users:', insertError);
+                    } else {
+                        console.log('Utilisateur créé avec succès dans la table users');
+                        // On récupère les données nouvellement créées
+                        const { data: newUserdata, error: newUserError } = await supabase
+                            .from('users')
+                            .select('*')
+                            .eq('id', data.user.id)
+                            .single()
+
+                        if (!newUserError && newUserdata) {
+                            this.currentUser = { ...data.user, ...newUserdata }
+                            console.log('Informations de l\'utilisateur dans la table users:', newUserdata);
+                            // Retourner les données complètes dans le résultat
+                            return {
+                                success: true,
+                                user: { ...data.user, ...newUserdata }
+                            }
+                        }
+                    }
+                } else if (userData) {
+                    // Si l'utilisateur existe déjà, on le charge
                     this.currentUser = { ...data.user, ...userData }
+                    console.log('Informations de l\'utilisateur dans la table users:', userData);
+                    // Retourner les données complètes dans le résultat
+                    return {
+                        success: true,
+                        user: { ...data.user, ...userData }
+                    }
                 }
 
                 return {
@@ -242,33 +284,78 @@ class AuthManager {
      */
     async updateUser(updates) {
         try {
-            // Mise à jour dans Supabase Auth
-            const { data, error } = await supabase.auth.updateUser(updates)
+            console.log('Mise à jour utilisateur - Données reçues:', updates);
+            console.log('Utilisateur courant avant mise à jour:', this.currentUser);
 
-            if (error) {
-                throw error
+            // Si l'utilisateur courant n'est pas défini, on tente de le récupérer depuis le store
+            // (cas où l'AuthManager n'a pas été synchronisé)
+            if (!this.currentUser?.id) {
+                console.log('Recherche de l\'utilisateur dans le store...');
+                // On tente de récupérer l'utilisateur depuis le store via une méthode
+                // Pour cela, on va utiliser une approche plus directe
+                // On suppose que l'utilisateur est accessible via le store Vuex
             }
 
-            // Mise à jour dans la table users
+            // Mise à jour dans la table users uniquement
+            // (les champs comme email, password sont gérés par Supabase Auth)
             if (this.currentUser?.id) {
-                const { error: userError } = await supabase
+                // Séparation des champs pour Supabase Auth et pour la table users
+                const authFields = {};
+                const userFields = {};
+
+                // Séparer les champs qui doivent aller dans Supabase Auth vs la table users
+                Object.keys(updates).forEach(key => {
+                    if (['email', 'password'].includes(key)) {
+                        authFields[key] = updates[key];
+                    } else {
+                        userFields[key] = updates[key];
+                    }
+                });
+
+                console.log('Champs auth:', authFields);
+                console.log('Champs user:', userFields);
+
+                // Mise à jour des champs d'authentification si présents
+                if (Object.keys(authFields).length > 0) {
+                    console.log('Mise à jour des champs d\'authentification...');
+                    const { data, error } = await supabase.auth.updateUser(authFields);
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour auth:', error);
+                        throw error;
+                    }
+                    console.log('Mise à jour auth réussie:', data);
+                }
+
+                // Mise à jour dans la table users
+                console.log('Mise à jour de la table users avec:', userFields);
+                const { data: userData, error: userError } = await supabase
                     .from('users')
-                    .update(updates)
+                    .update(userFields)
                     .eq('id', this.currentUser.id)
+                    .select()
+                    .single();
 
                 if (userError) {
-                    console.warn('Erreur lors de la mise à jour de la table users:', userError)
+                    console.error('Erreur lors de la mise à jour de la table users:', userError);
+                    throw userError;
                 }
-            }
+                console.log('Mise à jour table users réussie:', userData);
 
-            this.currentUser = { ...this.currentUser, ...data.user }
+                // Mettre à jour l'utilisateur courant avec les données mises à jour
+                if (userData) {
+                    this.currentUser = { ...this.currentUser, ...userData };
+                    console.log('Utilisateur mis à jour:', this.currentUser);
+                }
+            } else {
+                console.warn('Aucun utilisateur courant trouvé pour la mise à jour');
+            }
 
             return {
                 success: true,
-                user: data.user
+                user: this.currentUser
             }
         } catch (error) {
-            console.error('Erreur lors de la mise à jour de l\'utilisateur:', error)
+            console.error('Erreur complète lors de la mise à jour de l\'utilisateur:', error);
             return {
                 success: false,
                 error: error.message

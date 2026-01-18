@@ -70,6 +70,7 @@ export const authModule = {
             try {
                 const result = await authManager.signIn(email, password);
                 if (result.success) {
+                    // Assurer que les données complètes (y compris celles de la table users) sont utilisées
                     commit('SET_USER', result.user);
                     commit('SET_PERMISSIONS', ['read', 'write']); // Permissions de base
                     commit('SET_LOADING', false);

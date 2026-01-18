@@ -4,6 +4,7 @@ import Dashboard from '../components/Dashboard.vue'
 import MissionMap from '../components/MissionMap.vue'
 import MissionDetail from '../components/MissionDetail.vue'
 import Profile from '../components/Profile.vue'
+import ProfileCompletion from '../components/ProfileCompletion.vue'
 import Notifications from '../components/Notifications.vue'
 import SocialHub from '../components/SocialHub.vue'
 
@@ -41,6 +42,12 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: Profile,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile/completion',
+    name: 'ProfileCompletion',
+    component: ProfileCompletion,
     meta: { requiresAuth: true }
   },
   {

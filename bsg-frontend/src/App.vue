@@ -30,6 +30,7 @@ export default {
           <RouterLink to="/about" class="menu-item">À propos</RouterLink>
           <RouterLink to="/signup" class="menu-item" v-if="!isLoggedIn">S'inscrire</RouterLink>
           <RouterLink to="/login" class="menu-item" v-if="!isLoggedIn">Se connecter</RouterLink>
+          <RouterLink to="/profile" class="menu-item" v-if="isLoggedIn">Mon Profil</RouterLink>
           <RouterLink to="/users" class="menu-item" v-if="isLoggedIn">Liste des utilisateurs</RouterLink>
           <RouterLink to="/game" class="menu-item" v-if="isLoggedIn">Bienveillant Seduction Game</RouterLink>
           <RouterLink to="/webhook-test" class="menu-item" v-if="isLoggedIn">Test Webhook</RouterLink>

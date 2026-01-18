@@ -2,6 +2,11 @@
     <div class="profile">
         <header class="profile-header">
             <h1>Mon Profil</h1>
+            <div class="profile-actions">
+                <router-link to="/profile/completion" class="btn btn-primary">
+                    Compléter mon profil
+                </router-link>
+            </div>
         </header>
 
         <div class="profile-content">
@@ -119,8 +124,35 @@ export default {
             'totalMissions'
         ]),
         userProfile() {
-            return this.currentUser || this.user
+            // Pour afficher les données de la table users personnalisée
+            // On combine les données de l'utilisateur auth avec celles de la table users
+            const authUser = this.user || {};
+            const customUser = this.currentUser || {};
+
+            console.log('Debug userProfile - authUser:', authUser);
+            console.log('Debug userProfile - customUser:', customUser);
+
+            // Fusionner les données : préférences de customUser (table users) sur authUser (table auth)
+            return {
+                ...authUser,
+                ...customUser,
+                // Spécifique à la table users
+                pseudo: customUser.pseudo || authUser.user_metadata?.pseudo || '',
+                nom: customUser.nom || authUser.user_metadata?.nom || '',
+                prenom: customUser.prenom || authUser.user_metadata?.prenom || '',
+                competences: customUser.competences || [],
+                historique: customUser.historique || [],
+                latitude: customUser.latitude || null,
+                longitude: customUser.longitude || null
+            };
         },
+
+        // Méthode pour formater les compétences
+        formatSkills(skills) {
+            if (!skills || skills.length === 0) return 'Aucune compétence';
+            return skills.join(', ');
+        },
+
         totalXP() {
             // Simuler le calcul des points d'expérience
             return this.completedMissions.length * 100
