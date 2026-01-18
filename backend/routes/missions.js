@@ -1,5 +1,10 @@
 import express from 'express'
 const router = express.Router()
+import dotenv from 'dotenv'
+
+dotenv.config(/*{ path: '../../.env' }*/)
+
+console.log("process ", process.env)
 
 // Importer la base de données
 import { getDB } from '../db.js'
@@ -84,9 +89,8 @@ router.post('/generate', async (req, res) => {
 
         // Appel à l'agent n8n pour générer la mission
         // Utilisation de l'endpoint n8n générique
-        // const n8nWebhookUrl = 'http://localhost:5678/webhook/cdac2c18-00f0-4020-b316-a695181d9b3f'
-        const n8nWebhookUrl = 'https://endamoebic-ardell-tonetically.ngrok-free.dev/webhook/6f459dce-8955-44e6-b567-ba26692d8db4'
-
+        const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL
+        console.log(n8nWebhookUrl)
         // Données à envoyer à n8n
         const n8nPayload = {
             user: {
