@@ -1,6 +1,8 @@
 // Gestion de la session et des permissions utilisateur
 // Module Vuex pour la gestion d'état de l'authentification
 
+import { authManager } from '../modules/AuthManager'
+
 export const authModule = {
     namespaced: true,
 
@@ -66,24 +68,17 @@ export const authModule = {
             commit('SET_ERROR', null);
 
             try {
-                // Ici, on utiliserait l'AuthManager pour effectuer la connexion
-                // const authManager = new AuthManager(supabaseManager);
-                // const result = await authManager.signIn(email, password);
-
-                // Pour l'exemple, on simule une connexion réussie
-                const mockUser = {
-                    id: 1,
-                    email: email,
-                    pseudo: 'UtilisateurTest',
-                    nom: 'Test',
-                    prenom: 'Utilisateur'
-                };
-
-                commit('SET_USER', mockUser);
-                commit('SET_PERMISSIONS', ['read', 'write']);
-                commit('SET_LOADING', false);
-
-                return { success: true, user: mockUser };
+                const result = await authManager.signIn(email, password);
+                if (result.success) {
+                    commit('SET_USER', result.user);
+                    commit('SET_PERMISSIONS', ['read', 'write']); // Permissions de base
+                    commit('SET_LOADING', false);
+                    return { success: true, user: result.user };
+                } else {
+                    commit('SET_ERROR', result.error);
+                    commit('SET_LOADING', false);
+                    return { success: false, error: result.error };
+                }
             } catch (error) {
                 commit('SET_ERROR', error.message);
                 commit('SET_LOADING', false);
@@ -97,24 +92,24 @@ export const authModule = {
             commit('SET_ERROR', null);
 
             try {
-                // Ici, on utiliserait l'AuthManager pour l'inscription
-                // const authManager = new AuthManager(supabaseManager);
-                // const result = await authManager.signUp(email, password, userData);
-
-                // Pour l'exemple, on simule une inscription réussie
-                const mockUser = {
-                    id: 2,
-                    email: email,
+                const result = await authManager.signUp({
+                    email,
+                    password,
                     pseudo: userData.pseudo,
                     nom: userData.nom,
                     prenom: userData.prenom
-                };
+                });
 
-                commit('SET_USER', mockUser);
-                commit('SET_PERMISSIONS', ['read']);
-                commit('SET_LOADING', false);
-
-                return { success: true, user: mockUser };
+                if (result.success) {
+                    commit('SET_USER', result.user);
+                    commit('SET_PERMISSIONS', ['read']); // Permissions de base pour nouvel utilisateur
+                    commit('SET_LOADING', false);
+                    return { success: true, user: result.user };
+                } else {
+                    commit('SET_ERROR', result.error);
+                    commit('SET_LOADING', false);
+                    return { success: false, error: result.error };
+                }
             } catch (error) {
                 commit('SET_ERROR', error.message);
                 commit('SET_LOADING', false);
@@ -125,13 +120,14 @@ export const authModule = {
         // Déconnexion
         async logout({ commit }) {
             try {
-                // Ici, on utiliserait l'AuthManager pour la déconnexion
-                // const authManager = new AuthManager(supabaseManager);
-                // await authManager.signOut();
-
-                // Pour l'exemple, on simule une déconnexion réussie
-                commit('RESET_AUTH_STATE');
-                return { success: true };
+                const result = await authManager.signOut();
+                if (result.success) {
+                    commit('RESET_AUTH_STATE');
+                    return { success: true };
+                } else {
+                    commit('SET_ERROR', result.error);
+                    return { success: false, error: result.error };
+                }
             } catch (error) {
                 commit('SET_ERROR', error.message);
                 return { success: false, error: error.message };
@@ -143,24 +139,10 @@ export const authModule = {
             commit('SET_LOADING', true);
 
             try {
-                // Ici, on vérifierait l'état de l'authentification avec Supabase
-                // const authManager = new AuthManager(supabaseManager);
-                // const user = authManager.getCurrentUser();
-
-                // Pour l'exemple, on suppose qu'un utilisateur est connecté
-                const mockUser = {
-                    id: 1,
-                    email: 'user@example.com',
-                    pseudo: 'UtilisateurTest',
-                    nom: 'Test',
-                    prenom: 'Utilisateur'
-                };
-
-                commit('SET_USER', mockUser);
-                commit('SET_PERMISSIONS', ['read', 'write']);
+                // On pourrait vérifier l'état avec Supabase ici
+                // Pour l'instant, on laisse tel quel
                 commit('SET_LOADING', false);
-
-                return { success: true, user: mockUser };
+                return { success: true };
             } catch (error) {
                 commit('SET_LOADING', false);
                 commit('SET_ERROR', error.message);

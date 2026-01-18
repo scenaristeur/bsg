@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { authManager } from '../modules/AuthManager'
 
 export default {
     name: 'Auth',
@@ -103,18 +103,17 @@ export default {
         }
     },
     methods: {
-        ...mapActions('auth', ['login', 'signup']),
-
         async handleLogin() {
             this.loading = true
             this.error = null
 
             try {
-                const result = await this.login(this.loginForm)
+                const result = await authManager.signIn(this.loginForm.email, this.loginForm.password)
                 if (result.success) {
                     this.success = 'Connexion réussie !'
                     // Stocker le token d'authentification dans localStorage
-                    localStorage.setItem('userToken', 'mock-token')
+                    const token = await authManager.getAuthToken()
+                    localStorage.setItem('userToken', token)
                     // Redirection vers le dashboard
                     this.$router.push('/dashboard')
                 } else {
@@ -132,13 +131,12 @@ export default {
             this.error = null
 
             try {
-                const result = await this.signup({
-                    ...this.signupForm,
-                    userData: {
-                        pseudo: this.signupForm.pseudo,
-                        nom: this.signupForm.nom,
-                        prenom: this.signupForm.prenom
-                    }
+                const result = await authManager.signUp({
+                    email: this.signupForm.email,
+                    password: this.signupForm.password,
+                    pseudo: this.signupForm.pseudo,
+                    nom: this.signupForm.nom,
+                    prenom: this.signupForm.prenom
                 })
 
                 if (result.success) {
@@ -152,7 +150,8 @@ export default {
                         prenom: ''
                     }
                     // Stocker le token d'authentification dans localStorage après inscription
-                    localStorage.setItem('userToken', 'mock-token')
+                    const token = await authManager.getAuthToken()
+                    localStorage.setItem('userToken', token)
                     // Redirection vers le dashboard après inscription
                     this.$router.push('/dashboard')
                 } else {
