@@ -1,6 +1,8 @@
 // Gestion des missions actives et de leur progression
 // Module Vuex pour la gestion d'état des missions
 
+import { missionService } from '../services/missionService'
+
 export const missionsModule = {
     namespaced: true,
 
@@ -97,39 +99,43 @@ export const missionsModule = {
             commit('SET_ERROR', null);
 
             try {
-                // Ici, on utiliserait le MissionEngine pour charger les missions
-                // const missionEngine = new MissionEngine(supabaseManager, webhookManager);
-                // const result = await missionEngine.getUserMissions(userId);
+                console.log('loadUserMissions called with userId:', userId);
+                // Utilisation du service pour récupérer les missions depuis l'API backend
+                const missions = await missionService.getUserMissions(userId);
+                console.log('Missions reçues du backend:', missions);
 
-                // Pour l'exemple, on simule le chargement de missions
-                const mockMissions = [
-                    {
-                        id: 1,
-                        titre: 'Mission de test 1',
-                        description: 'Description de la première mission',
-                        difficulte: 'Facile',
-                        objectifs: 'Objectif 1, Objectif 2',
-                        indices: 'Indice 1',
-                        statut: 'initie',
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        titre: 'Mission de test 2',
-                        description: 'Description de la deuxième mission',
-                        difficulte: 'Moyen',
-                        objectifs: 'Objectif 3, Objectif 4',
-                        indices: 'Indice 2',
-                        statut: 'en_cours',
-                        created_at: new Date().toISOString()
-                    }
-                ];
+                // Filtrer les missions actives (statut != 'completed')
+                // Note: Si la base de données n'a pas de champ statut, on considère toutes comme actives
+                let activeMissions = [];
+                let completedMissions = [];
 
-                commit('SET_ACTIVE_MISSIONS', mockMissions);
+                if (missions && Array.isArray(missions)) {
+                    activeMissions = missions.filter(mission => {
+                        // Si le champ statut existe et est 'completed', on le met dans les complétées
+                        if (mission.statut) {
+                            return mission.statut !== 'completed';
+                        }
+                        // Sinon, on considère toutes comme actives (par défaut)
+                        return true;
+                    });
+                    completedMissions = missions.filter(mission => {
+                        if (mission.statut) {
+                            return mission.statut === 'completed';
+                        }
+                        return false;
+                    });
+                }
+
+                console.log('Missions actives filtrées:', activeMissions);
+                console.log('Missions complétées filtrées:', completedMissions);
+
+                commit('SET_ACTIVE_MISSIONS', activeMissions);
+                commit('SET_COMPLETED_MISSIONS', completedMissions);
                 commit('SET_LOADING', false);
 
-                return { success: true, missions: mockMissions };
+                return { success: true, missions: activeMissions };
             } catch (error) {
+                console.error('Erreur dans loadUserMissions:', error);
                 commit('SET_ERROR', error.message);
                 commit('SET_LOADING', false);
                 return { success: false, error: error.message };

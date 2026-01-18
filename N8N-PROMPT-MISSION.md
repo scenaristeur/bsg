@@ -16,7 +16,7 @@ L'application BSG est un jeu de rôle interactif où les utilisateurs doivent ac
 
 - Générer un titre court et captivant
 - Créer une description détaillée avec des éléments de narration
-- Définir le niveau de difficulté (Facile, Moyen, Difficile)
+- Définir le niveau de difficulté (un nombre de 0 à 10)
 - Spécifier les objectifs de la mission
 - Ajouter des indices pertinents
 
@@ -34,7 +34,7 @@ Retourner les données dans le format JSON suivant :
     "description": {
       "type": "string"
     },
-    "difficulté": { "type": "string" },
+    "difficulté": { "type": "integer" },
     "objectifs": { "type": "string" },
     "indices": { "type": "string" },
     "user_id": { "type": "integer" }
@@ -56,7 +56,7 @@ Retourner les données dans le format JSON suivant :
 {
   "titre": "Le Mystère du Café",
   "description": "Trouvez l'indice caché dans le café de la place Bellecour pour découvrir le prochain lieu de la mission.",
-  "difficulte": "Facile",
+  "difficulte": 4,
   "objectifs": "Identifier le lieu de la mission,Trouver l'indice caché,Résoudre l'énigme",
   "indices": "L'indice est caché dans le café, derrière le bar.",
   "user_id":  {{ $json.user.id }}
@@ -81,10 +81,11 @@ Retourner les données dans le format JSON suivant :
 ## Format de sortie requis
 
 RETOURNE UNIQUEMENT CE JSON SANS AUCUN TEXTE SUPPLÉMENTAIRE :
-{"titre": "Titre de la mission", "description": "Description détaillée", "difficulte": "Facile|Moyen|Difficile", "objectifs": "objectif1,objectif2,objectif3", "indices": "Indices pertinents", "user_id": "indentifiant du user"}
+{"titre": "Titre de la mission", "description": "Description détaillée", "difficulte": "nombre de 0 à 10", "objectifs": "objectif1,objectif2,objectif3", "indices": "Indices pertinents", "user_id": "indentifiant du user"}
 
 NE RETOURNE JAMAIS QUE LE JSON, RIEN D'AUTRE. PAS DE MARKDOWN, PAS D'EXPLICATIONS, PAS DE TEXTES INTRODUCTIFS. N'UTILISE PAS LE FORMATAGE JSON : ``json\n'...`
 N'UTILISE PAS DE CARACTERE D'ECHAPPEMENT COMME : "L\\'Enquête" ou "L\'Enquête", écris directement "L'Enquête".
 N'UTILISE PAS DE CARACTERES UNICODES.
 ON DOIT POUVOIR PARSER LE JSON DIRECTEMENT.
+LA SORTIE DOIT ËTRE DU JSON EXPLOITABLE !
 LE user_id QUE TU DOIS OBLIGATOIREMENT UTILISER EST LE : {{ $json.user.id }}

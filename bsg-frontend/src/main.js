@@ -10,6 +10,7 @@ import {
 } from './store/index'
 import router from './router/index'
 import { authManager } from './modules/AuthManager'
+import { notificationHandler } from './modules/NotificationHandler'
 
 // Création du store Vuex avec les modules
 const store = createStore({

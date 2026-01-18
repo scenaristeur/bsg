@@ -1,120 +1,159 @@
 <template>
-    <div class="generate-mission-section">
-        <button @click="generateNewMission" :disabled="isGenerating" class="generate-mission-btn">
-            {{ isGenerating ? 'Génération en cours...' : 'Générer une nouvelle mission' }}
+    <div class="generate-mission-container">
+        <button @click="generateMission" :disabled="loading" class="generate-mission-btn"
+            :class="{ 'loading': loading }">
+            <span v-if="loading">Génération en cours...</span>
+            <span v-else>Générer une nouvelle mission</span>
         </button>
 
-        <div v-if="missionStatus" class="mission-status">
-            <p>{{ missionStatus }}</p>
+        <div v-if="error" class="error-message">
+            {{ error }}
+        </div>
+
+        <div v-if="success" class="success-message">
+            Mission en cours de génération via n8n !
         </div>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue'
-import { useUserStore } from '@/stores/user'
+import { mapState, mapGetters } from 'vuex'
+import { authManager } from '../modules/AuthManager'
 
 export default {
     name: 'GenerateMissionButton',
-    setup() {
-        const userStore = useUserStore()
-        const isGenerating = ref(false)
-        const missionStatus = ref('')
-
-        const generateNewMission = async () => {
-            if (!userStore.currentUser) {
-                missionStatus.value = 'Veuillez vous connecter pour générer une mission'
-                return
-            }
-
-            isGenerating.value = true
-            missionStatus.value = 'Génération de la mission...'
+    data() {
+        return {
+            loading: false,
+            error: null,
+            success: false
+        }
+    },
+    computed: {
+        ...mapState('auth', ['user']),
+        ...mapGetters('auth', ['currentUser'])
+    },
+    methods: {
+        async generateMission() {
+            this.loading = true
+            this.error = null
+            this.success = false
 
             try {
-                // Appel au backend pour générer une mission
-                const response = await fetch('http://localhost:3000/api/missions/generate', {
+                // Récupérer les informations de l'utilisateur
+                const user = this.currentUser || this.user
+
+                if (!user) {
+                    throw new Error('Utilisateur non connecté')
+                }
+
+                // Récupérer l'URL du webhook n8n depuis les variables d'environnement
+                const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL
+                if (!n8nWebhookUrl) {
+                    throw new Error('Variable d\'environnement VITE_N8N_WEBHOOK_URL non définie')
+                }
+
+                // Données à envoyer à n8n
+                const n8nPayload = {
+                    user: {
+                        id: user.id,
+                        pseudo: user.pseudo || user.user_metadata?.pseudo || '',
+                        prenom: user.prenom || user.user_metadata?.prenom || '',
+                        nom: user.nom || user.user_metadata?.nom || '',
+                        email: user.email,
+                        preferencesRencontre: user.preferencesRencontre || {}
+                    },
+                    chatInput: `Génère une mission personnalisée pour l'utilisateur ${user.prenom || user.user_metadata?.prenom || 'Utilisateur'} ${user.nom || user.user_metadata?.nom || 'Inconnu'}. 
+                    Crée une mission captivante dans le style de l'application BSG avec un titre, une description, un niveau de difficulté, des objectifs et des indices.`
+                }
+
+                console.log('Envoi de la requête à n8n:', n8nPayload);
+
+                // Effectuer l'appel HTTP vers le webhook n8n
+                const response = await fetch(n8nWebhookUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userStore.token}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        userId: userStore.currentUser.id,
-                        location: userStore.currentUser.location || {},
-                        preferences: userStore.currentUser.preferencesRencontre || {}
-                    })
+                    body: JSON.stringify(n8nPayload)
                 })
 
-                // Vérifier si la réponse est vide avant de parser
-                let data;
-                if (response.headers.get('content-length') !== '0') {
-                    data = await response.json()
-                } else {
-                    data = {}
+                console.log('Réponse n8n:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur n8n:', errorText);
+                    throw new Error(`Erreur HTTP de n8n: ${response.status} - ${response.statusText} - ${errorText}`)
                 }
 
-                if (response.ok) {
-                    missionStatus.value = 'Mission en cours de génération via l\'agent n8n...'
+                const n8nData = await response.json()
+                console.log('Données reçues de n8n:', n8nData);
 
-                    // Afficher l'ID de la mission temporaire
-                    console.log('Mission ID temporaire:', data.missionId)
+                this.success = true
+                console.log('Mission envoyée avec succès à n8n')
 
-                    // Attente de quelques secondes pour simuler le temps de génération
-                    setTimeout(() => {
-                        missionStatus.value = 'Mission générée avec succès !'
-                    }, 3000)
-                } else {
-                    missionStatus.value = `Erreur: ${data.error || 'Impossible de générer la mission'}`
-                }
+                // Afficher une notification à l'utilisateur
+                notificationHandler.showNotification('Mission en cours de génération via n8n !');
+
+                // Rediriger vers la page des missions pour voir la génération
+                this.$router.push('/missions')
+
             } catch (error) {
-                console.error('Erreur lors de la génération de mission:', error)
-                missionStatus.value = 'Erreur réseau lors de la génération de la mission'
+                console.error('Erreur lors de la génération de la mission:', error)
+                this.error = error.message || 'Erreur lors de la génération de la mission'
             } finally {
-                isGenerating.value = false
+                this.loading = false
             }
-        }
-
-        return {
-            isGenerating,
-            missionStatus,
-            generateNewMission
         }
     }
 }
 </script>
 
 <style scoped>
-.generate-mission-section {
+.generate-mission-container {
     text-align: center;
-    padding: 20px;
-    margin: 20px 0;
+    padding: 2rem;
 }
 
 .generate-mission-btn {
-    background-color: #4CAF50;
+    padding: 1rem 2rem;
+    background-color: #28a745;
     color: white;
     border: none;
-    padding: 12px 24px;
-    font-size: 16px;
     border-radius: 4px;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s;
 }
 
 .generate-mission-btn:hover:not(:disabled) {
-    background-color: #45a049;
+    background-color: #218838;
 }
 
 .generate-mission-btn:disabled {
-    background-color: #cccccc;
+    background-color: #6c757d;
     cursor: not-allowed;
 }
 
-.mission-status {
-    margin-top: 15px;
-    padding: 10px;
+.generate-mission-btn.loading {
+    opacity: 0.7;
+}
+
+.error-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f8d7da;
+    color: #721c24;
     border-radius: 4px;
-    background-color: #e8f5e8;
-    color: #2e7d32;
+    text-align: center;
+}
+
+.success-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 4px;
+    text-align: center;
 }
 </style>

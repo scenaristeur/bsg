@@ -1,56 +1,47 @@
 <template>
     <div class="missions-view">
-        <h2>Mes Missions</h2>
+        <header class="missions-header">
+            <h1>Mes Missions</h1>
+            <router-link to="/dashboard" class="btn btn-secondary">
+                Retour au tableau de bord
+            </router-link>
+        </header>
 
-        <!-- Bouton pour générer une nouvelle mission -->
-        <GenerateMissionButton />
-
-        <div class="missions-list">
-            <h3>Missions en cours</h3>
-            <div v-if="loading" class="loading">Chargement...</div>
-
-            <div v-if="errorMessage" class="error-message">
-                {{ errorMessage }}
+        <div class="missions-content">
+            <div class="missions-filters">
+                <button @click="filterMissions('all')" :class="{ active: activeFilter === 'all' }">
+                    Toutes
+                </button>
+                <button @click="filterMissions('active')" :class="{ active: activeFilter === 'active' }">
+                    Actives
+                </button>
+                <button @click="filterMissions('completed')" :class="{ active: activeFilter === 'completed' }">
+                    Terminées
+                </button>
             </div>
 
-            <div v-if="!loading && !errorMessage && userMissions.length === 0" class="no-missions">
-                Aucune mission en cours.
-            </div>
-
-            <div v-for="mission in userMissions" :key="mission.id" class="mission-card">
-                <div class="mission-header">
-                    <h4>{{ mission.titre }}</h4>
-                    <span class="difficulty-badge" :class="mission.difficulte.toLowerCase()">
-                        {{ mission.difficulte }}
-                    </span>
-                </div>
-
-                <div class="mission-content">
+            <div class="missions-list">
+                <div v-for="mission in filteredMissions" :key="mission.id" class="mission-card">
+                    <h3>{{ mission.titre }}</h3>
                     <p class="mission-description">{{ mission.description }}</p>
-
-                    <div v-if="mission.objectifs" class="mission-section">
-                        <h5>Objectifs:</h5>
-                        <ul>
-                            <li v-for="(objective, index) in mission.objectifs.split(',')" :key="index">
-                                {{ objective.trim() }}
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div v-if="mission.indices" class="mission-section">
-                        <h5>Indices:</h5>
-                        <p>{{ mission.indices }}</p>
-                    </div>
-
                     <div class="mission-meta">
-                        <p><strong>Créée le:</strong> {{ formatDate(mission.createdAt) }}</p>
-                        <p><strong>Statut:</strong> {{ mission.statut }}</p>
+                        <span class="difficulty">{{ mission.difficulte }}</span>
+                        <span class="progress">
+                            Progression: {{ calculateProgress(mission.id) }}%
+                        </span>
                     </div>
-                </div>
-
-                <div class="mission-actions">
-                    <button @click="startMission(mission.id)" class="btn btn-primary">Commencer</button>
-                    <button @click="viewMissionDetails(mission.id)" class="btn btn-secondary">Détails</button>
+                    <div class="mission-actions">
+                        <button @click="viewMissionDetails(mission.id)" class="btn-outline">
+                            Voir détails
+                        </button>
+                        <button v-if="mission.statut === 'active'" @click="continueMission(mission.id)"
+                            class="btn-primary">
+                            Continuer
+                        </button>
+                        <button v-else @click="startMission(mission.id)" class="btn-primary">
+                            Commencer
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -58,16 +49,12 @@
 </template>
 
 <script>
-import GenerateMissionButton from '../GenerateMissionButton.vue'
 import { useUserStore } from '../../stores/user'
 import { missionService } from '../../services/missionService'
 import { io } from 'socket.io-client'
 
 export default {
     name: 'MissionsView',
-    components: {
-        GenerateMissionButton
-    },
     data() {
         return {
             userMissions: [],
@@ -90,6 +77,16 @@ export default {
             this.initWebSocket()
         } else {
             console.log('No currentUser found')
+        }
+    },
+
+    watch: {
+        // Surveiller les changements dans les missions
+        userMissions: {
+            handler(newMissions) {
+                console.log('Missions mises à jour dans MissionsView:', newMissions)
+            },
+            deep: true
         }
     },
     beforeUnmount() {

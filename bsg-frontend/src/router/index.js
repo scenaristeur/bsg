@@ -61,6 +61,12 @@ const routes = [
     name: 'SocialHub',
     component: SocialHub,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/missions/new',
+    name: 'NewMission',
+    component: () => import('../components/GenerateMissionButton.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

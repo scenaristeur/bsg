@@ -25,13 +25,9 @@ router.get('/', async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
     try {
         const db = await getDB()
-        const missions = await db.all(`
-            SELECT m.*, ma.role, ma.statut 
-            FROM missions m 
-            JOIN missions_assignees ma ON m.id = ma.mission_id 
-            WHERE ma.user_id = ? 
-            ORDER BY m.createdAt DESC
-        `, [req.params.userId])
+        // Pour le moment, on retourne toutes les missions (pas de relation utilisateur-mission)
+        // Dans une version réelle, cette requête serait différente selon la structure de la base
+        const missions = await db.all('SELECT * FROM missions ORDER BY createdAt DESC')
         res.json(missions)
     } catch (error) {
         console.error('Erreur lors de la récupération des missions de l\'utilisateur:', error)

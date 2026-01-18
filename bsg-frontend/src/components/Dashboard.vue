@@ -3,8 +3,7 @@
         <header class="dashboard-header">
             <h1>Tableau de bord BSG</h1>
             <div class="user-info">
-                <span>Bienvenue, {{ currentUser?.pseudo || 'Utilisateur' }}!</span>
-                <button @click="logout" class="logout-btn">Déconnexion</button>
+                <span>Bienvenue {{ currentUser?.prenom || 'Utilisateur' }}!</span>
             </div>
         </header>
 
@@ -33,9 +32,12 @@
             <section class="missions-section">
                 <div class="section-header">
                     <h2>Missions</h2>
-                    <button @click="createNewMission" class="btn-primary">
-                        Nouvelle Mission
-                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button @click="createNewMission" class="btn-primary">
+                            Nouvelle Mission
+                        </button>
+                        <GenerateMissionButton />
+                    </div>
                 </div>
 
                 <div v-if="loadingMissions" class="loading">
@@ -102,9 +104,14 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import GenerateMissionButton from './GenerateMissionButton.vue'
+import { missionService } from '../services/missionService'
 
 export default {
     name: 'Dashboard',
+    components: {
+        GenerateMissionButton
+    },
     data() {
         return {
             loadingMissions: false,
@@ -127,14 +134,35 @@ export default {
             'unreadNotifications'
         ])
     },
+    mounted() {
+        // Charger les missions dès que le composant est monté
+        console.log('Dashboard mounted, currentUser:', this.currentUser);
+        this.loadMissions()
+
+        // Initialiser le WebSocket pour les notifications
+        this.initWebSocket()
+    },
+    beforeUnmount() {
+        // Nettoyer le WebSocket lors de la destruction du composant
+        this.cleanupWebSocket()
+    },
     methods: {
         ...mapActions('auth', ['logout']),
         ...mapActions('missions', ['loadUserMissions']),
         ...mapActions('social', ['loadSocialInteractions']),
 
-        async created() {
-            await this.loadUserMissions(this.user?.id)
-            await this.loadSocialInteractions(this.user?.id)
+        async loadMissions() {
+            if (this.currentUser?.id) {
+                try {
+                    // Charger les missions de l'utilisateur
+                    await this.loadUserMissions(this.currentUser.id)
+
+                    // Charger les interactions sociales
+                    await this.loadSocialInteractions(this.currentUser.id)
+                } catch (error) {
+                    console.error('Erreur lors du chargement des données du dashboard:', error)
+                }
+            }
         },
 
         createNewMission() {
@@ -157,6 +185,21 @@ export default {
         formatDate(dateString) {
             const date = new Date(dateString)
             return date.toLocaleDateString('fr-FR')
+        },
+
+        // Initialisation du WebSocket pour les notifications
+        initWebSocket() {
+            if (!this.currentUser) return
+
+            // Ici, vous implémenteriez la connexion WebSocket
+            // Pour l'instant, on laisse ce placeholder
+            console.log('Initialisation du WebSocket pour les notifications...')
+        },
+
+        // Nettoyage des ressources WebSocket
+        cleanupWebSocket() {
+            // Ici, vous implémenteriez le nettoyage
+            console.log('Nettoyage du WebSocket')
         }
     }
 }

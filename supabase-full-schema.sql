@@ -198,6 +198,13 @@ ALTER TABLE interactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE help_requests ENABLE ROW LEVEL SECURITY;
 
 -- Politiques de sécurité pour la table users
+-- Supprimer les politiques existantes si elles existent
+DROP POLICY IF EXISTS "Users can view their own profile" ON users;
+DROP POLICY IF EXISTS "Users can create their own profile" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+DROP POLICY IF EXISTS "Users can delete their own profile" ON users;
+
+-- Créer les nouvelles politiques
 -- Autoriser les utilisateurs à voir leur propre profil
 CREATE POLICY "Users can view their own profile" ON users
 FOR SELECT USING (id = auth.uid());
@@ -213,6 +220,30 @@ FOR UPDATE USING (id = auth.uid());
 -- Autoriser les utilisateurs à supprimer leur propre profil
 CREATE POLICY "Users can delete their own profile" ON users
 FOR DELETE USING (id = auth.uid());
+
+-- Politiques de sécurité pour la table missions
+-- Supprimer les politiques existantes si elles existent
+DROP POLICY IF EXISTS "Users can view their own missions" ON missions;
+DROP POLICY IF EXISTS "Users can create their own missions" ON missions;
+DROP POLICY IF EXISTS "Users can update their own missions" ON missions;
+DROP POLICY IF EXISTS "Users can delete their own missions" ON missions;
+
+-- Créer les nouvelles politiques
+-- Autoriser les utilisateurs à voir les missions qu'ils ont créées
+CREATE POLICY "Users can view their own missions" ON missions
+FOR SELECT USING (created_by = auth.uid());
+
+-- Autoriser les utilisateurs à créer leurs propres missions
+CREATE POLICY "Users can create their own missions" ON missions
+FOR INSERT WITH CHECK (created_by = auth.uid());
+
+-- Autoriser les utilisateurs à mettre à jour leurs propres missions
+CREATE POLICY "Users can update their own missions" ON missions
+FOR UPDATE USING (created_by = auth.uid());
+
+-- Autoriser les utilisateurs à supprimer leurs propres missions
+CREATE POLICY "Users can delete their own missions" ON missions
+FOR DELETE USING (created_by = auth.uid());
 
 -- Création de la table de test "truc"
 CREATE TABLE IF NOT EXISTS truc (

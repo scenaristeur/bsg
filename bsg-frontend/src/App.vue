@@ -1,6 +1,7 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import { mapGetters } from 'vuex'
+import { authManager } from './modules/AuthManager'
 
 export default {
   name: 'App',
@@ -14,6 +15,20 @@ export default {
       // Rediriger vers la page de connexion
       // La redirection sera gérée par le routeur grâce au middleware
     }
+  },
+  mounted() {
+    // Vérifier l'état d'authentification au montage de l'application
+    // Utiliser l'écouteur d'état d'authentification pour gérer l'état initial
+    authManager.onAuthStateChange((event, session) => {
+      console.log('Changement d\'état d\'authentification détecté:', event);
+      if (event === 'SIGNED_IN' && session?.user) {
+        // L'utilisateur est connecté, on peut charger ses données
+        console.log('Utilisateur connecté:', session.user);
+      } else if (event === 'SIGNED_OUT') {
+        // L'utilisateur est déconnecté
+        console.log('Utilisateur déconnecté');
+      }
+    });
   }
 }
 </script>
@@ -23,18 +38,13 @@ export default {
     <!-- Header avec menu horizontal -->
     <header class="app-header">
       <div class="header-content">
-        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+        <img alt="Vue logo" class="logo" src="@/assets/logo.png" width="125" height="125" />
 
         <nav class="horizontal-menu">
           <RouterLink to="/" class="menu-item">Accueil</RouterLink>
           <RouterLink to="/about" class="menu-item">À propos</RouterLink>
-          <RouterLink to="/signup" class="menu-item" v-if="!isLoggedIn">S'inscrire</RouterLink>
-          <RouterLink to="/login" class="menu-item" v-if="!isLoggedIn">Se connecter</RouterLink>
           <RouterLink to="/profile" class="menu-item" v-if="isLoggedIn">Mon Profil</RouterLink>
-          <RouterLink to="/users" class="menu-item" v-if="isLoggedIn">Liste des utilisateurs</RouterLink>
-          <RouterLink to="/game" class="menu-item" v-if="isLoggedIn">Bienveillant Seduction Game</RouterLink>
-          <RouterLink to="/webhook-test" class="menu-item" v-if="isLoggedIn">Test Webhook</RouterLink>
-          <button v-if="isLoggedIn" @click="handleLogout" class="logout-button menu-item">Se déconnecter</button>
+          <button v-if="isLoggedIn" @click="handleLogout" class="logout-button menu-item">Déconnexion</button>
         </nav>
       </div>
     </header>
