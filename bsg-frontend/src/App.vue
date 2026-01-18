@@ -1,18 +1,20 @@
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
-import { useUserStore } from './stores/user'
+import { mapGetters } from 'vuex'
 
-const userStore = useUserStore()
-
-const handleLogout = () => {
-  userStore.logout()
-  // Rediriger vers la page de connexion
-  // La redirection sera gérée par le routeur grâce au middleware
-}
-
-// Méthode pour vérifier l'état d'authentification
-const isLoggedIn = () => {
-  return userStore.isLoggedIn
+export default {
+  name: 'App',
+  computed: {
+    ...mapGetters('auth', ['isLoggedIn'])
+  },
+  methods: {
+    handleLogout() {
+      // Utiliser le store Vuex pour la déconnexion
+      this.$store.dispatch('auth/logout')
+      // Rediriger vers la page de connexion
+      // La redirection sera gérée par le routeur grâce au middleware
+    }
+  }
 }
 </script>
 
@@ -26,12 +28,12 @@ const isLoggedIn = () => {
         <nav class="horizontal-menu">
           <RouterLink to="/" class="menu-item">Accueil</RouterLink>
           <RouterLink to="/about" class="menu-item">À propos</RouterLink>
-          <RouterLink to="/signup" class="menu-item" v-if="!isLoggedIn()">S'inscrire</RouterLink>
-          <RouterLink to="/login" class="menu-item" v-if="!isLoggedIn()">Se connecter</RouterLink>
-          <RouterLink to="/users" class="menu-item" v-if="isLoggedIn()">Liste des utilisateurs</RouterLink>
-          <RouterLink to="/game" class="menu-item" v-if="isLoggedIn()">Bienveillant Seduction Game</RouterLink>
-          <RouterLink to="/webhook-test" class="menu-item" v-if="isLoggedIn()">Test Webhook</RouterLink>
-          <button v-if="isLoggedIn()" @click="handleLogout" class="logout-button menu-item">Se déconnecter</button>
+          <RouterLink to="/signup" class="menu-item" v-if="!isLoggedIn">S'inscrire</RouterLink>
+          <RouterLink to="/login" class="menu-item" v-if="!isLoggedIn">Se connecter</RouterLink>
+          <RouterLink to="/users" class="menu-item" v-if="isLoggedIn">Liste des utilisateurs</RouterLink>
+          <RouterLink to="/game" class="menu-item" v-if="isLoggedIn">Bienveillant Seduction Game</RouterLink>
+          <RouterLink to="/webhook-test" class="menu-item" v-if="isLoggedIn">Test Webhook</RouterLink>
+          <button v-if="isLoggedIn" @click="handleLogout" class="logout-button menu-item">Se déconnecter</button>
         </nav>
       </div>
     </header>

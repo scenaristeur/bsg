@@ -1,14 +1,24 @@
-import './assets/main.css'
-
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-
 import App from './App.vue'
-import router from './router'
+import { createStore } from 'vuex'
+import {
+    authModule,
+    missionsModule,
+    mapModule,
+    notificationsModule,
+    socialModule
+} from './store/index'
+import router from './router/index'
 
-const app = createApp(App)
+// Création du store Vuex avec les modules
+const store = createStore({
+    modules: {
+        auth: authModule,
+        missions: missionsModule,
+        map: mapModule,
+        notifications: notificationsModule,
+        social: socialModule
+    }
+})
 
-app.use(createPinia())
-app.use(router)
-
-app.mount('#app')
+createApp(App).use(store).use(router).mount('#app')
